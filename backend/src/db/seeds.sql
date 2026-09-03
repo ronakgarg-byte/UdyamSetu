@@ -1,0 +1,151 @@
+-- ====================================================================
+-- Udyam Setu - Initial Master Seed Data
+-- ====================================================================
+
+-- --------------------------------------------------------------------
+-- Seed Customer Types
+-- --------------------------------------------------------------------
+INSERT INTO customer_types (key, name_en, name_hi, description) VALUES
+('students', 'Students', 'छात्र', 'School and college students in the local area'),
+('farmers', 'Farmers', 'किसान', 'Agricultural workers and local cultivators'),
+('workers', 'Workers', 'मजदूर', 'Daily wage earners and factory workers'),
+('insurance', 'Insurance holders', 'बीमाधारक', 'Insured families and salaried individuals'),
+('nearby', 'Nearby businesses', 'आस-पास के व्यवसाय', 'Neighboring shops and commercial establishments'),
+('everyone', 'Everyone', 'सभी', 'General public and broad village/town population')
+ON CONFLICT (key) DO NOTHING;
+
+-- --------------------------------------------------------------------
+-- Seed Problems
+-- --------------------------------------------------------------------
+INSERT INTO problems (key, name_en, name_hi, category) VALUES
+('customers', 'Not enough customers', 'पर्याप्त ग्राहक नहीं', 'market'),
+('rawcost', 'High raw material cost', 'कच्चे माल की ऊंची कीमत', 'financial'),
+('competition', 'Competition', 'प्रतिस्पर्धा', 'market'),
+('transport', 'Transportation issues', 'परिवहन समस्याएं', 'operational'),
+('suppliers', 'Finding suppliers', 'आपूर्तिकर्ता ढूंढना', 'operational'),
+('pricing', 'Pricing', 'मूल्य निर्धारण', 'market'),
+('workingcap', 'Lack of working capital', 'कार्यशील पूंजी की कमी', 'financial'),
+('loanrepay', 'Loan repayment', 'ऋण चुकौती', 'financial'),
+('seasonal', 'Seasonal demand', 'मौसमी मांग', 'market'),
+('employees', 'Finding employees', 'कर्मचारी ढूंढना', 'operational'),
+('marketing', 'Marketing', 'विपणन', 'market'),
+('stock', 'Stock management', 'स्टॉक प्रबंधन', 'operational'),
+('unknown', 'Don''t know which products to sell', 'पता नहीं कौन से उत्पाद बेचें', 'operational')
+ON CONFLICT (key) DO NOTHING;
+
+-- --------------------------------------------------------------------
+-- Seed Government Schemes Reference Data
+-- --------------------------------------------------------------------
+INSERT INTO schemes (
+    code, name_en, name_hi, ministry_en, ministry_hi,
+    description_en, description_hi,
+    min_loan_amount, max_loan_amount, subsidy_pct,
+    min_revenue_threshold, max_revenue_threshold,
+    target_problems, target_genders, base_eligibility_score, details_url
+) VALUES
+(
+    'pm_svanidhi',
+    'PM-SVANidhi (Street Vendor’s AtmaNirbhar Nidhi)',
+    'पीएम स्वनिधि (स्ट्रीट वेंडर्स आत्मनिर्भर निधि)',
+    'Ministry of Housing and Urban Affairs',
+    'आवासन और शहरी कार्य मंत्रालय',
+    'Collateral-free working capital loan for micro-entrepreneurs and street vendors up to ₹50,000 with 7% interest subsidy on digital transactions.',
+    'सूक्ष्म उद्यमियों और रेहड़ी-पटरी वालों के लिए ₹50,000 तक का संपार्श्विक-मुक्त कार्यशील पूंजी ऋण, डिजिटल लेनदेन पर 7% ब्याज सब्सिडी के साथ।',
+    10000, 50000, 7.00,
+    0, 15000,
+    ARRAY['workingcap', 'customers', 'loanrepay'],
+    ARRAY['male', 'female', 'other'],
+    88,
+    'https://pmsvanidhi.mohua.gov.in/'
+),
+(
+    'mudra_shishu',
+    'Pradhan Mantri Mudra Yojana (Shishu)',
+    'प्रधानमंत्री मुद्रा योजना (शिशु)',
+    'Ministry of Finance / MSME',
+    'वित्त मंत्रालय / एमएसएमई',
+    'Micro-credit loan up to ₹50,000 for starting or stabilizing small micro-enterprises with minimal paperwork and zero collateral.',
+    'बिना किसी गारंटी और न्यूनतम कागजी कार्रवाई के छोटे व्यवसायों को शुरू या स्थिर करने के लिए ₹50,000 तक का सूक्ष्म ऋण।',
+    10000, 50000, 0.00,
+    0, 30000,
+    ARRAY['workingcap', 'stock', 'unknown'],
+    ARRAY['male', 'female', 'other'],
+    74,
+    'https://www.mudra.org.in/'
+),
+(
+    'mudra_kishore',
+    'Pradhan Mantri Mudra Yojana (Kishore)',
+    'प्रधानमंत्री मुद्रा योजना (किशोर)',
+    'Ministry of Finance / MSME',
+    'वित्त मंत्रालय / एमएसएमई',
+    'Loans from ₹50,000 up to ₹5,00,000 for growing micro-enterprises to purchase equipment, raw materials, or expand operations.',
+    'व्यवसाय विस्तार, उपकरण या कच्चा माल खरीदने के लिए ₹50,000 से ₹5,00,000 तक का ऋण।',
+    50000, 500000, 0.00,
+    20000, 50000,
+    ARRAY['workingcap', 'rawcost', 'suppliers'],
+    ARRAY['male', 'female', 'other'],
+    76,
+    'https://www.mudra.org.in/'
+),
+(
+    'mudra_tarun',
+    'Pradhan Mantri Mudra Yojana (Tarun)',
+    'प्रधानमंत्री मुद्रा योजना (तरुण)',
+    'Ministry of Finance / MSME',
+    'वित्त मंत्रालय / एमएसएमई',
+    'Higher tier credit from ₹5,00,000 up to ₹10,00,000 (and up to ₹20 lakh under updated limits) for established enterprises looking for scale.',
+    'स्थापित व्यवसायों के बड़े पैमाने पर विस्तार के लिए ₹5,00,000 से ₹10,00,000 तक का उच्च श्रेणी का ऋण।',
+    500000, 1000000, 0.00,
+    50000, NULL,
+    ARRAY['workingcap', 'transport', 'marketing'],
+    ARRAY['male', 'female', 'other'],
+    79,
+    'https://www.mudra.org.in/'
+),
+(
+    'pmegp',
+    'PMEGP (Prime Minister’s Employment Generation Programme)',
+    'पीएमईजीपी (प्रधानमंत्री रोजगार सृजन कार्यक्रम)',
+    'Ministry of MSME',
+    'सूक्ष्म, लघु एवं मध्यम उद्यम मंत्रालय',
+    'Credit-linked subsidy program offering up to 25-35% capital subsidy for setting up new micro-enterprises and manufacturing/service units.',
+    'नई सूक्ष्म इकाइयों और सेवा व्यवसायों की स्थापना के लिए 25-35% तक पूंजीगत सब्सिडी प्रदान करने वाला कार्यक्रम।',
+    100000, 5000000, 35.00,
+    0, NULL,
+    ARRAY['workingcap', 'loanrepay', 'rawcost', 'marketing'],
+    ARRAY['male', 'female', 'other'],
+    81,
+    'https://www.kviconline.gov.in/pmegpeportal/'
+),
+(
+    'stand_up_india',
+    'Stand-Up India Scheme',
+    'स्टैंड-अप इंडिया योजना',
+    'Ministry of Finance / SIDBI',
+    'वित्त मंत्रालय / सिडबी',
+    'Bank loans between ₹10 lakh and ₹1 Crore for greenfield enterprises set up by SC, ST, and Women entrepreneurs.',
+    'अनुसूचित जाति, अनुसूचित जनजाति और महिला उद्यमियों द्वारा स्थापित नए उद्यमों के लिए ₹10 लाख से ₹1 करोड़ तक का बैंक ऋण।',
+    1000000, 10000000, 0.00,
+    20000, NULL,
+    ARRAY['workingcap', 'marketing', 'suppliers'],
+    ARRAY['female', 'other'],
+    72,
+    'https://www.standupmitra.in/'
+),
+(
+    'pm_vishwakarma',
+    'PM Vishwakarma Scheme',
+    'पीएम विश्वकर्मा योजना',
+    'Ministry of MSME / Ministry of Skill Development',
+    'एमएसएमई मंत्रालय / कौशल विकास मंत्रालय',
+    'End-to-end holistic support for traditional artisans and craftspeople including collateral-free loans up to ₹3 lakh at 5% interest, toolkit incentives, and skill training.',
+    'पारंपरिक कारीगरों और शिल्पकारों के लिए ₹3 लाख तक का संपार्श्विक-मुक्त 5% ब्याज ऋण, टूलकिट प्रोत्साहन और कौशल प्रशिक्षण।',
+    100000, 300000, 5.00,
+    0, NULL,
+    ARRAY['workingcap', 'rawcost', 'suppliers', 'marketing'],
+    ARRAY['male', 'female', 'other'],
+    85,
+    'https://pmvishwakarma.gov.in/'
+)
+ON CONFLICT (code) DO NOTHING;
