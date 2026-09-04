@@ -98,9 +98,36 @@ export const T = {
 
   talkAdvisor: { en: "Ask AI Advisor", hi: "एआई सलाहकार से पूछें" },
   viewSchemes: { en: "View all matching schemes", hi: "सभी उपयुक्त योजनाएं देखें" },
+  applyOnPortal: { en: "Apply on Official Portal", hi: "आधिकारिक पोर्टल पर आवेदन करें" },
+  visitOfficialSite: { en: "Visit Official Website", hi: "आधिकारिक वेबसाइट पर जाएं" },
+  officialGovPortal: { en: "Official Govt Portal", hi: "आधिकारिक सरकारी पोर्टल" },
   startOver: { en: "Start over", hi: "फिर से शुरू करें" },
   loading: { en: "Loading analysis...", hi: "विश्लेषण लोड हो रहा है..." },
   saving: { en: "Saving data...", hi: "डेटा सहेजा जा रहा है..." },
+
+  // AGMARKNET Mandi Live Prices
+  mandiPricesTitle: { en: "AGMARKNET Live Mandi Raw Material Prices", hi: "AGMARKNET दैनिक थोक मंडी भाव" },
+  mandiPricesSub: {
+    en: "Daily wholesale APMC modal rates for micro-enterprise raw materials & stock",
+    hi: "सूक्ष्म उद्यमों के कच्चे माल व स्टॉक के लिए दैनिक थोक मंडी भाव",
+  },
+  searchCommodity: { en: "Search raw material or commodity...", hi: "कच्चा माल या सामान खोजें..." },
+  allCategories: { en: "All Raw Materials", hi: "सभी कच्चा माल" },
+  catGrains: { en: "Grains & Groceries", hi: "अनाज व किराना" },
+  catTextiles: { en: "Textiles & Fabrics", hi: "कपड़ा व सिलाई" },
+  catWood: { en: "Wood & Carpentry", hi: "लकड़ी व फर्नीचर" },
+  catHardware: { en: "Metals & Hardware", hi: "लोहा व हार्डवेयर" },
+  catDairy: { en: "Dairy & Food Items", hi: "डेयरी व खानपान" },
+  modalRate: { en: "Mandi Wholesale Rate", hi: "मंडी थोक भाव" },
+  retailRate: { en: "Local Retail Market", hi: "स्थानीय खुदरा भाव" },
+  mandiSavings: { en: "Direct Savings", hi: "थोक सीधी बचत" },
+  trendRising: { en: "Rising ↗", hi: "बढ़त ↗" },
+  trendFalling: { en: "Falling ↘", hi: "गिरावट ↘" },
+  trendStable: { en: "Stable ➔", hi: "स्थिर ➔" },
+  directMandiSourcingTip: {
+    en: "Tip: Sourcing raw materials directly in cash from your APMC yard saves 15-30% on distributor margins.",
+    hi: "सलाह: स्थानीय APMC मंडी से सीधे नकद में कच्चा माल खरीदने पर बिचौलियों के 15-30% मुनाफे की सीधी बचत होती है।",
+  },
 
   // AI Chatbot
   chatTitle: { en: "Udyam Setu AI Advisor", hi: "उद्यम सेतु एआई सलाहकार" },

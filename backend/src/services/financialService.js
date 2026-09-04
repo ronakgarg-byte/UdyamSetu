@@ -63,10 +63,15 @@ function calculateFinancialMetrics(sales = {}, expenses = {}, items = [], proble
     riskLevel = 'medium';
   }
 
-  // 10. Recommended Scheme
+  // 10. Recommended Scheme with direct portal links and metadata
   let scheme = {
     code: 'mudra_shishu',
     name: 'Mudra Yojana (Shishu)',
+    name_hi: 'प्रधानमंत्री मुद्रा योजना (शिशु)',
+    ministry: 'Ministry of Finance / MSME',
+    portalUrl: 'https://www.mudra.org.in/',
+    loanCeiling: 50000,
+    interestSubsidyPct: 0.0,
     match: 74,
   };
 
@@ -75,7 +80,12 @@ function calculateFinancialMetrics(sales = {}, expenses = {}, items = [], proble
   if (revenue > 0 && revenue < 15000) {
     scheme = {
       code: 'pm_svanidhi',
-      name: 'PM-SVANidhi',
+      name: 'PM-SVANidhi (Street Vendor Loan)',
+      name_hi: 'पीएम स्वनिधि योजना',
+      ministry: 'Ministry of Housing and Urban Affairs',
+      portalUrl: 'https://pmsvanidhi.mohua.gov.in/',
+      loanCeiling: 50000,
+      interestSubsidyPct: 7.0,
       match: 88,
     };
   } else if (
@@ -85,12 +95,22 @@ function calculateFinancialMetrics(sales = {}, expenses = {}, items = [], proble
     scheme = {
       code: 'pmegp',
       name: "PMEGP (Prime Minister's Employment Generation Programme)",
+      name_hi: 'पीएमईजीपी (प्रधानमंत्री रोजगार सृजन कार्यक्रम)',
+      ministry: 'Ministry of MSME / KVIC',
+      portalUrl: 'https://www.kviconline.gov.in/pmegpeportal/',
+      loanCeiling: 5000000,
+      interestSubsidyPct: 35.0,
       match: 81,
     };
   } else if (revenue >= 50000) {
     scheme = {
       code: 'mudra_tarun',
       name: 'Mudra Yojana (Tarun)',
+      name_hi: 'प्रधानमंत्री मुद्रा योजना (तरुण)',
+      ministry: 'Ministry of Finance / MSME',
+      portalUrl: 'https://www.mudra.org.in/',
+      loanCeiling: 1000000,
+      interestSubsidyPct: 0.0,
       match: 79,
     };
   }

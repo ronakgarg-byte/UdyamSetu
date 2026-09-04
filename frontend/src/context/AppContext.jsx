@@ -159,11 +159,42 @@ export function AppProvider({ children }) {
     if (debtRatio > 50 || netProfit < 0) riskLevel = 'high';
     else if (debtRatio > 25 || cashFlow < rev * 0.05) riskLevel = 'medium';
 
-    let scheme = { name: 'Mudra Yojana (Shishu)', match: 74 };
-    if (rev > 0 && rev < 15000) scheme = { name: 'PM-SVANidhi', match: 88 };
-    else if (problems.includes('workingcap') || problems.includes('loanrepay'))
-      scheme = { name: 'PMEGP (Prime Minister Employment Generation)', match: 81 };
-    else if (rev >= 50000) scheme = { name: 'Mudra Yojana (Tarun)', match: 79 };
+    let scheme = {
+      code: 'mudra_shishu',
+      name: 'Mudra Yojana (Shishu)',
+      name_hi: 'प्रधानमंत्री मुद्रा योजना (शिशु)',
+      portalUrl: 'https://www.mudra.org.in/',
+      loanCeiling: 50000,
+      match: 74,
+    };
+    if (rev > 0 && rev < 15000) {
+      scheme = {
+        code: 'pm_svanidhi',
+        name: 'PM-SVANidhi (Street Vendor Loan)',
+        name_hi: 'पीएम स्वनिधि योजना',
+        portalUrl: 'https://pmsvanidhi.mohua.gov.in/',
+        loanCeiling: 50000,
+        match: 88,
+      };
+    } else if (problems.includes('workingcap') || problems.includes('loanrepay')) {
+      scheme = {
+        code: 'pmegp',
+        name: "PMEGP (Prime Minister's Employment Generation)",
+        name_hi: 'पीएमईजीपी योजना',
+        portalUrl: 'https://www.kviconline.gov.in/pmegpeportal/',
+        loanCeiling: 5000000,
+        match: 81,
+      };
+    } else if (rev >= 50000) {
+      scheme = {
+        code: 'mudra_tarun',
+        name: 'Mudra Yojana (Tarun)',
+        name_hi: 'प्रधानमंत्री मुद्रा योजना (तरुण)',
+        portalUrl: 'https://www.mudra.org.in/',
+        loanCeiling: 1000000,
+        match: 79,
+      };
+    }
 
     return {
       rev,

@@ -8,19 +8,31 @@ async function getLocalContext(req, res) {
       return res.status(400).json({ error: 'User ID is required' });
     }
 
-    let district = 'Varanasi';
+    let district = req.query?.district || '';
 
-    if (isPostgres()) {
-      const userRes = await pool.query('SELECT district FROM users WHERE id = $1', [userId]);
-      if (userRes.rows[0]?.district) {
-        district = userRes.rows[0].district;
-      }
-    } else {
-      const user = inMemoryStore.users.get(userId);
-      if (user?.district) {
-        district = user.district;
+    if (!district) {
+      if (isPostgres()) {
+        const [bizRes, userRes] = await Promise.all([
+          pool.query('SELECT district FROM businesses WHERE user_id = $1', [userId]).catch(() => ({ rows: [] })),
+          pool.query('SELECT district FROM users WHERE id = $1', [userId]).catch(() => ({ rows: [] })),
+        ]);
+        if (bizRes.rows[0]?.district) {
+          district = bizRes.rows[0].district;
+        } else if (userRes.rows[0]?.district) {
+          district = userRes.rows[0].district;
+        }
+      } else {
+        const biz = inMemoryStore.businesses.get(userId);
+        const user = inMemoryStore.users.get(userId);
+        if (biz?.district) {
+          district = biz.district;
+        } else if (user?.district) {
+          district = user.district;
+        }
       }
     }
+
+    if (!district) district = 'Varanasi';
 
     const localContext = await getAggregatedLocalContext(district);
 
