@@ -5,11 +5,11 @@ import { Field, TextInput, Chip, VoiceRow } from '../components/Common';
 import Layout from '../components/Layout';
 import { EXPENSE_FIELDS, CUSTOMER_OPTIONS, PROBLEM_OPTIONS } from '../i18n/translations';
 import { api } from '../services/api';
+import { stopSpeaking } from '../utils/speechUtils';
 
 export default function QuestionnairePage() {
   const navigate = useNavigate();
   const [qStep, setQStep] = useState(0); // 0..5
-  const [saving, setSaving] = useState(false);
 
   const {
     t,
@@ -28,6 +28,7 @@ export default function QuestionnairePage() {
     problems,
     setProblems,
     toggle,
+    lang,
   } = useApp();
 
   const sectionTitles = [
@@ -40,39 +41,47 @@ export default function QuestionnairePage() {
   ];
 
   const handleBack = () => {
+    stopSpeaking();
     if (qStep > 0) {
-      setQStep(qStep - 1);
+      setQStep((prev) => prev - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       navigate('/details');
     }
   };
 
-  const handleNext = async () => {
+  const handleNext = () => {
+    // 1. Immediately stop any active TTS reading
+    stopSpeaking();
+
+    // 2. Perform background async sync to backend (non-blocking)
     if (userId) {
-      setSaving(true);
-      try {
-        if (qStep === 0) {
-          await api.saveBusiness(userId, biz);
-        } else if (qStep === 1) {
-          await api.saveSales(userId, sales);
-        } else if (qStep === 2) {
-          await api.saveExpenses(userId, expenses);
-        } else if (qStep === 5) {
-          await api.saveProfile(userId, {
-            customers,
-            competition,
-            problems,
-          });
+      const stepToSave = qStep;
+      (async () => {
+        try {
+          if (stepToSave === 0) {
+            await api.saveBusiness(userId, biz);
+          } else if (stepToSave === 1) {
+            await api.saveSales(userId, sales);
+          } else if (stepToSave === 2) {
+            await api.saveExpenses(userId, expenses);
+          } else if (stepToSave === 5) {
+            await api.saveProfile(userId, {
+              customers,
+              competition,
+              problems,
+            });
+          }
+        } catch (err) {
+          console.warn('[QuestionnairePage] Background sync note:', err.message);
         }
-      } catch (err) {
-        console.warn('API sync warning (proceeding):', err.message);
-      } finally {
-        setSaving(false);
-      }
+      })();
     }
 
+    // 3. Immediately transition to next slide
     if (qStep < 5) {
-      setQStep(qStep + 1);
+      setQStep((prev) => prev + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       navigate('/items');
     }
@@ -87,7 +96,7 @@ export default function QuestionnairePage() {
       progress={progressPct}
       onBack={handleBack}
       onNext={handleNext}
-      loading={saving}
+      loading={false}
     >
       <div>
         <p className="text-xs font-semibold mb-1" style={{ color: "#a36a2d" }}>

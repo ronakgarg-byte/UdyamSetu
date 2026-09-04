@@ -39,8 +39,9 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Mount API routes
+// Mount API routes (supports both /api/path and direct serverless /path rewrites)
 app.use('/api', apiRoutes);
+app.use('/', apiRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {

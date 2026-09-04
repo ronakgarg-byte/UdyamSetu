@@ -80,10 +80,10 @@ export const api = {
   getLocalContext: (userId) => request(`/local-context/${userId}`),
 
   // 9. AI Chatbot
-  sendChatMessage: (userId, { message, lang = 'en', history = [] }) =>
+  sendChatMessage: (userId, { message, lang = 'en', history = [], clientContext = {} }) =>
     request(`/chat/${userId}`, {
       method: 'POST',
-      body: JSON.stringify({ message, lang, history }),
+      body: JSON.stringify({ message, lang, history, clientContext }),
     }),
 
   // Full summary
