@@ -1,12 +1,3 @@
-/**
- * data.gov.in & MyScheme Integration Service
- * Scaffolds dataset loader and API connectors for government policies, subsidies, and credit schemes.
- * 
- * NOTE / TODO for production:
- * MyScheme (myscheme.gov.in) and data.gov.in provide open catalog APIs requiring registered API keys.
- * This module scaffolds the live dataset loader and provides full structured schema definitions.
- */
-
 const SCHEMES_MASTER_CATALOG = [
   {
     code: 'pm_svanidhi',
@@ -79,7 +70,7 @@ const SCHEMES_MASTER_CATALOG = [
     ministry: 'Ministry of MSME / KVIC',
     category: 'Capital Subsidy Credit-Linked',
     loanCeiling: 5000000,
-    interestSubsidyPct: 35.0, // Up to 35% capital subsidy in rural areas
+    interestSubsidyPct: 35.0,
     targetBeneficiaries: ['Rural Micro-Enterprises', 'Manufacturing Units', 'Agro-processing'],
     eligibilityCriteria: {
       collateralRequired: false,
@@ -94,7 +85,7 @@ const SCHEMES_MASTER_CATALOG = [
     ministry: 'Ministry of MSME / Ministry of Skill Development',
     category: 'End-to-End Artisan & Tradesperson Support',
     loanCeiling: 300000,
-    interestSubsidyPct: 5.0, // Concessional 5% interest rate
+    interestSubsidyPct: 5.0,
     toolkitGrant: 15000,
     targetBeneficiaries: ['Carpenters', 'Blacksmiths', 'Goldsmiths', 'Tailors', 'Cobblers', 'Weavers'],
     eligibilityCriteria: {

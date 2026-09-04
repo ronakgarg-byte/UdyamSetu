@@ -1,8 +1,3 @@
-/**
- * Census of India Data Integration Service
- * Extracts population, literacy, working age demographics, and rural household counts.
- */
-
 const CENSUS_REGIONAL_DATABASE = {
   varanasi: {
     district: 'Varanasi',
@@ -10,7 +5,7 @@ const CENSUS_REGIONAL_DATABASE = {
     totalPopulation: 3676841,
     ruralPopulationPct: 56.5,
     urbanPopulationPct: 43.5,
-    genderRatio: 913, // females per 1000 males
+    genderRatio: 913,
     literacyRatePct: 75.6,
     maleLiteracyRatePct: 83.8,
     femaleLiteracyRatePct: 66.7,

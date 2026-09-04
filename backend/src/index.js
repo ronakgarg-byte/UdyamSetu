@@ -3,7 +3,6 @@ const cors = require('cors');
 require('dotenv').config();
 
 const apiRoutes = require('./routes/api');
-const { pool } = require('./config/db');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -32,13 +31,16 @@ app.get('/health', (req, res) => {
   });
 });
 
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    app: 'Udyam Setu Backend API',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Mount API routes
 app.use('/api', apiRoutes);
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: 'Endpoint not found', path: req.path });
-});
 
 // Global error handler
 app.use((err, req, res, next) => {
@@ -49,8 +51,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start listening if run directly
-if (require.main === module) {
+// Start listening if run directly in Node (not imported as a serverless module)
+if (process.env.NODE_ENV !== 'production' && require.main === module) {
   app.listen(PORT, () => {
     console.log(`🚀 Udyam Setu API server running on http://localhost:${PORT}`);
     console.log(`📡 Health check: http://localhost:${PORT}/health`);

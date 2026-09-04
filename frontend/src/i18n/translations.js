@@ -16,6 +16,24 @@ export const T = {
   optional: { en: "optional", hi: "वैकल्पिक" },
   speak: { en: "Tap to speak your answer", hi: "बोलकर जवाब दें" },
 
+  // Voice Assistant and Accessibility
+  voiceMode: { en: "Voice Mode", hi: "आवाज़ मोड" },
+  voiceModeOn: { en: "Voice Mode: ON", hi: "आवाज़ मोड: चालू" },
+  voiceModeOff: { en: "Voice Mode: OFF", hi: "आवाज़ मोड: बंद" },
+  voiceAssistantDesc: {
+    en: "Auto-reads questions aloud & accepts spoken answers for low-literacy users",
+    hi: "कम साक्षरता वाले उपयोगकर्ताओं के लिए प्रश्नों को बोलकर सुनाता है और मौखिक उत्तर स्वीकार करता है",
+  },
+  listening: { en: "Listening...", hi: "सुन रहे हैं..." },
+  replayAudio: { en: "Listen again", hi: "फिर से सुनें" },
+  tapToSpeak: { en: "Tap to speak", hi: "बोलने के लिए दबाएं" },
+  voiceRecognized: { en: "Recognized", hi: "पहचाना गया" },
+  reRecord: { en: "Speak again", hi: "दोबारा बोलें" },
+  speechNotSupported: {
+    en: "Voice features not supported on this browser. You can type normally.",
+    hi: "इस ब्राउज़र में आवाज़ सुविधा समर्थित नहीं है। आप सामान्य रूप से लिख सकते हैं।",
+  },
+
   // user details
   udTitle: { en: "Tell us about yourself", hi: "अपने बारे में बताएं" },
   udName: { en: "Your name", hi: "आपका नाम" },
@@ -78,11 +96,45 @@ export const T = {
   qROI: { en: "How much will an investment cost and earn?", hi: "एक निवेश की लागत और कमाई कितनी होगी?" },
   qDebtBurden: { en: "How much do you pay in loan EMI each month?", hi: "आप हर महीने लोन ईएमआई में कितना चुकाते हैं?" },
 
-  talkAdvisor: { en: "Ask the advisor", hi: "सलाहकार से पूछें" },
+  talkAdvisor: { en: "Ask AI Advisor", hi: "एआई सलाहकार से पूछें" },
   viewSchemes: { en: "View all matching schemes", hi: "सभी उपयुक्त योजनाएं देखें" },
   startOver: { en: "Start over", hi: "फिर से शुरू करें" },
   loading: { en: "Loading analysis...", hi: "विश्लेषण लोड हो रहा है..." },
   saving: { en: "Saving data...", hi: "डेटा सहेजा जा रहा है..." },
+
+  // AI Chatbot
+  chatTitle: { en: "Udyam Setu AI Advisor", hi: "उद्यम सेतु एआई सलाहकार" },
+  chatSubtitle: {
+    en: "Personalized guidance on your business, profits & schemes",
+    hi: "आपके व्यवसाय, मुनाफे और सरकारी योजनाओं पर व्यक्तिगत मार्गदर्शन",
+  },
+  chatPlaceholder: {
+    en: "Ask any question about your business or schemes...",
+    hi: "अपने व्यवसाय या योजनाओं के बारे में कोई भी प्रश्न पूछें...",
+  },
+  chatSend: { en: "Send", hi: "भेजें" },
+  chatThinking: { en: "AI Advisor is analyzing your business...", hi: "सलाहकार आपके व्यवसाय का विश्लेषण कर रहा है..." },
+  chatQuickPromptsTitle: { en: "Suggested questions:", hi: "सुझाए गए प्रश्न:" },
+  chatQuickPrompt1: {
+    en: "Am I eligible for any government loan scheme?",
+    hi: "क्या मुझे किसी सरकारी ऋण योजना का लाभ मिल सकता है?",
+  },
+  chatQuickPrompt2: {
+    en: "How can I reduce my monthly expenses?",
+    hi: "मैं अपने मासिक खर्च कैसे कम करूँ?",
+  },
+  chatQuickPrompt3: {
+    en: "How can I improve my net profit margin?",
+    hi: "मैं अपना शुद्ध मुनाफा कैसे बढ़ा सकता हूँ?",
+  },
+  chatQuickPrompt4: {
+    en: "What should I do to break even faster?",
+    hi: "लागत जल्दी पूरी करने के लिए क्या करना चाहिए?",
+  },
+  chatError: {
+    en: "Could not connect to AI advisor. Here is personalized advice based on your numbers:",
+    hi: "एआई सलाहकार से संपर्क नहीं हो सका। आपके आंकड़ों के आधार पर व्यक्तिगत सलाह:",
+  },
 };
 
 export const EXPENSE_FIELDS = [

@@ -23,7 +23,6 @@ describe('Government Schemes Matcher Engine Integration Tests', () => {
   });
 
   test('GET /api/schemes/:userId - low revenue vendor matches PM-SVANidhi top', async () => {
-    // 1. Create vendor
     const userRes = await fetch(`${baseUrl}/users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -31,21 +30,18 @@ describe('Government Schemes Matcher Engine Integration Tests', () => {
     });
     const { userId } = await userRes.json();
 
-    // 2. Sales: 10,000 monthly
     await fetch(`${baseUrl}/sales/${userId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ monthlyRevenue: 10000, dailySales: 350 }),
     });
 
-    // 3. Profile: working capital problem
     await fetch(`${baseUrl}/profile/${userId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ problems: ['workingcap', 'customers'] }),
     });
 
-    // 4. Fetch schemes
     const res = await fetch(`${baseUrl}/schemes/${userId}`);
     assert.strictEqual(res.status, 200);
     const data = await res.json();
@@ -55,11 +51,10 @@ describe('Government Schemes Matcher Engine Integration Tests', () => {
 
     const topScheme = data.schemes[0];
     assert.strictEqual(topScheme.code, 'pm_svanidhi');
-    assert.strictEqual(topScheme.matchPercentage, 92); // 88 base + problem match boost
+    assert.strictEqual(topScheme.matchPercentage, 92);
   });
 
   test('GET /api/schemes/:userId - female entrepreneur gets Stand-Up India boost', async () => {
-    // 1. Create female entrepreneur
     const userRes = await fetch(`${baseUrl}/users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -67,14 +62,12 @@ describe('Government Schemes Matcher Engine Integration Tests', () => {
     });
     const { userId } = await userRes.json();
 
-    // 2. High revenue scale
     await fetch(`${baseUrl}/sales/${userId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ monthlyRevenue: 85000 }),
     });
 
-    // 3. Profile
     await fetch(`${baseUrl}/profile/${userId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -91,7 +84,6 @@ describe('Government Schemes Matcher Engine Integration Tests', () => {
   });
 
   test('GET /api/schemes/:userId - tailoring/artisan business gets PM Vishwakarma boost', async () => {
-    // 1. Create artisan
     const userRes = await fetch(`${baseUrl}/users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -99,14 +91,12 @@ describe('Government Schemes Matcher Engine Integration Tests', () => {
     });
     const { userId } = await userRes.json();
 
-    // 2. Business: Tailoring Boutique
     await fetch(`${baseUrl}/businesses/${userId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'Tailoring / Boutique', what: 'Cloth stitching, dresses and embroidery' }),
     });
 
-    // 3. Profile: raw cost problem
     await fetch(`${baseUrl}/profile/${userId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

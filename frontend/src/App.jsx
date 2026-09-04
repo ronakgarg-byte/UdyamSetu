@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import WelcomePage from './pages/WelcomePage';
 import UserDetailsPage from './pages/UserDetailsPage';
@@ -10,7 +10,7 @@ import DashboardPage from './pages/DashboardPage';
 export default function App() {
   return (
     <AppProvider>
-      <BrowserRouter>
+      <Router>
         <Routes>
           <Route path="/" element={<WelcomePage />} />
           <Route path="/details" element={<UserDetailsPage />} />
@@ -19,7 +19,7 @@ export default function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
+      </Router>
     </AppProvider>
   );
 }

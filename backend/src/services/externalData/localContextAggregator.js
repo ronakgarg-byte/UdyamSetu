@@ -10,7 +10,7 @@ async function getAggregatedLocalContext(districtName = 'Varanasi') {
   const normalizedKey = (districtName || 'Varanasi').toLowerCase().trim();
   const cacheKey = `district:${normalizedKey}`;
 
-  // 1. Check database or in-memory cache
+  // 1. Check cache
   if (isPostgres()) {
     try {
       const cached = await pool.query(
@@ -36,7 +36,7 @@ async function getAggregatedLocalContext(districtName = 'Varanasi') {
     }
   }
 
-  // 2. Fetch fresh data from all external integration services in parallel
+  // 2. Fetch fresh data in parallel
   const [mapsContext, censusData, mandiPricing, schemeCatalog] = await Promise.all([
     getLocalMapsContext(districtName),
     getDistrictCensusData(districtName),

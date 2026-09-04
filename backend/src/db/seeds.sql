@@ -1,10 +1,3 @@
--- ====================================================================
--- Udyam Setu - Initial Master Seed Data
--- ====================================================================
-
--- --------------------------------------------------------------------
--- Seed Customer Types
--- --------------------------------------------------------------------
 INSERT INTO customer_types (key, name_en, name_hi, description) VALUES
 ('students', 'Students', 'छात्र', 'School and college students in the local area'),
 ('farmers', 'Farmers', 'किसान', 'Agricultural workers and local cultivators'),
@@ -14,9 +7,6 @@ INSERT INTO customer_types (key, name_en, name_hi, description) VALUES
 ('everyone', 'Everyone', 'सभी', 'General public and broad village/town population')
 ON CONFLICT (key) DO NOTHING;
 
--- --------------------------------------------------------------------
--- Seed Problems
--- --------------------------------------------------------------------
 INSERT INTO problems (key, name_en, name_hi, category) VALUES
 ('customers', 'Not enough customers', 'पर्याप्त ग्राहक नहीं', 'market'),
 ('rawcost', 'High raw material cost', 'कच्चे माल की ऊंची कीमत', 'financial'),
@@ -33,9 +23,6 @@ INSERT INTO problems (key, name_en, name_hi, category) VALUES
 ('unknown', 'Don''t know which products to sell', 'पता नहीं कौन से उत्पाद बेचें', 'operational')
 ON CONFLICT (key) DO NOTHING;
 
--- --------------------------------------------------------------------
--- Seed Government Schemes Reference Data
--- --------------------------------------------------------------------
 INSERT INTO schemes (
     code, name_en, name_hi, ministry_en, ministry_hi,
     description_en, description_hi,

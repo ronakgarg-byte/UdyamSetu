@@ -47,8 +47,8 @@ describe('Financial Analysis Engine Unit & API Tests', () => {
     assert.strictEqual(res.totalExpenses, 56500);
     assert.strictEqual(res.netProfit, 18500);
     assert.strictEqual(res.cashFlow, 15000);
-    assert.strictEqual(res.breakEvenGap, -15000); // 56500 + 3500 - 75000 = -15000 (covering costs)
-    assert.strictEqual(res.workingCapital, 425); // 135 + 290
+    assert.strictEqual(res.breakEvenGap, -15000);
+    assert.strictEqual(res.workingCapital, 425);
     assert.strictEqual(res.riskLevel, 'low');
     assert.strictEqual(res.scheme.name, 'Mudra Yojana (Tarun)');
     assert.strictEqual(res.scheme.match, 79);
@@ -82,7 +82,7 @@ describe('Financial Analysis Engine Unit & API Tests', () => {
 
   test('calculateFinancialMetrics - high debt ratio (>50%) causes high risk', () => {
     const sales = { monthlyRevenue: 20000 };
-    const expenses = { rent: 3000, emi: 12000 }; // 12000 / 20000 = 60%
+    const expenses = { rent: 3000, emi: 12000 };
 
     const res = calculateFinancialMetrics(sales, expenses, [], []);
     assert.strictEqual(res.debtRatio, 60);
@@ -91,16 +91,15 @@ describe('Financial Analysis Engine Unit & API Tests', () => {
 
   test('calculateFinancialMetrics - negative net profit causes high risk', () => {
     const sales = { monthlyRevenue: 20000 };
-    const expenses = { rent: 10000, rawMaterials: 15000, emi: 0 }; // total 25000 > 20000
+    const expenses = { rent: 10000, rawMaterials: 15000, emi: 0 };
 
     const res = calculateFinancialMetrics(sales, expenses, [], []);
     assert.strictEqual(res.netProfit, -5000);
     assert.strictEqual(res.riskLevel, 'high');
-    assert.strictEqual(res.breakEvenGap, 5000); // Needs 5000 more in sales
+    assert.strictEqual(res.breakEvenGap, 5000);
   });
 
   test('GET /api/analysis/:userId - end-to-end user analysis retrieval', async () => {
-    // 1. Create a user
     const userRes = await fetch(`${baseUrl}/users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -108,21 +107,18 @@ describe('Financial Analysis Engine Unit & API Tests', () => {
     });
     const { userId } = await userRes.json();
 
-    // 2. Save sales
     await fetch(`${baseUrl}/sales/${userId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ dailySales: 1200, monthlyRevenue: 36000 }),
     });
 
-    // 3. Save expenses
     await fetch(`${baseUrl}/expenses/${userId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ rent: 3000, rawMaterials: 18000, electricity: 800, emi: 1500 }),
     });
 
-    // 4. Save items
     await fetch(`${baseUrl}/items/${userId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -134,7 +130,6 @@ describe('Financial Analysis Engine Unit & API Tests', () => {
       }),
     });
 
-    // 5. Save problems
     await fetch(`${baseUrl}/profile/${userId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -144,7 +139,6 @@ describe('Financial Analysis Engine Unit & API Tests', () => {
       }),
     });
 
-    // 6. Query Analysis endpoint
     const analysisRes = await fetch(`${baseUrl}/analysis/${userId}`);
     assert.strictEqual(analysisRes.status, 200);
     const data = await analysisRes.json();
@@ -155,7 +149,7 @@ describe('Financial Analysis Engine Unit & API Tests', () => {
     assert.strictEqual(data.analysis.totalExpenses, 21800);
     assert.strictEqual(data.analysis.netProfit, 14200);
     assert.strictEqual(data.analysis.cashFlow, 12700);
-    assert.strictEqual(data.analysis.workingCapital, 420); // 300 + 120
+    assert.strictEqual(data.analysis.workingCapital, 420);
     assert.strictEqual(data.analysis.scheme.code, 'pmegp');
     assert.strictEqual(data.analysis.riskLevel, 'low');
   });

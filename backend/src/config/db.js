@@ -195,7 +195,6 @@ try {
   });
 
   pool.on('error', (err) => {
-    // Non-fatal warning when pool connection drops or reconnects
     isPostgresAvailable = false;
   });
 

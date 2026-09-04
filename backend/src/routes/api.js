@@ -10,6 +10,7 @@ const itemsController = require('../controllers/itemsController');
 const analysisController = require('../controllers/analysisController');
 const contextController = require('../controllers/contextController');
 const schemesController = require('../controllers/schemesController');
+const chatController = require('../controllers/chatController');
 
 // User routes
 router.post('/users', userController.createUser);
@@ -41,8 +42,11 @@ router.get('/analysis/:userId', analysisController.getAnalysis);
 // Government Schemes Matcher route
 router.get('/schemes/:userId', schemesController.getMatchingSchemes);
 
-// Hyper-local Context route (External APIs: Maps, Census, AGMARKNET, MyScheme)
+// Hyper-local Context route
 router.get('/local-context/:userId', contextController.getLocalContext);
+
+// AI Chatbot Advisory route
+router.post('/chat/:userId', chatController.handleChatMessage);
 
 // Comprehensive user summary endpoint
 router.get('/summary/:userId', async (req, res) => {

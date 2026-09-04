@@ -1,5 +1,4 @@
 const { pool, inMemoryStore, isPostgres } = require('../config/db');
-const crypto = require('crypto');
 
 async function saveProfile(req, res) {
   try {
@@ -18,7 +17,6 @@ async function saveProfile(req, res) {
       try {
         await client.query('BEGIN');
 
-        // 1. Save / replace customer types (Section D)
         await client.query('DELETE FROM user_customer_types WHERE user_id = $1', [userId]);
         if (Array.isArray(customers) && customers.length > 0) {
           for (const key of customers) {
@@ -31,7 +29,6 @@ async function saveProfile(req, res) {
           }
         }
 
-        // 2. Save competition (Section E)
         await client.query(
           `INSERT INTO competition (user_id, count, where_located, updated_at)
            VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
@@ -43,7 +40,6 @@ async function saveProfile(req, res) {
           [userId, compCount, compWhere]
         );
 
-        // 3. Save / replace problems (Section F)
         await client.query('DELETE FROM user_problems WHERE user_id = $1', [userId]);
         if (Array.isArray(problems) && problems.length > 0) {
           for (const key of problems) {
@@ -73,7 +69,6 @@ async function saveProfile(req, res) {
         client.release();
       }
     } else {
-      // In-memory store
       inMemoryStore.user_customer_types = inMemoryStore.user_customer_types.filter((r) => r.userId !== userId);
       if (Array.isArray(customers)) {
         customers.forEach((key) => {

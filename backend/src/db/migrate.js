@@ -26,7 +26,6 @@ async function runMigrations() {
     await client.query('COMMIT');
     console.log('✅ [Migration] Master seeds inserted successfully.');
 
-    // Verify created tables
     const res = await client.query(`
       SELECT table_name 
       FROM information_schema.tables 

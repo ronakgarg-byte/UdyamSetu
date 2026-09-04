@@ -24,7 +24,6 @@ describe('Local Context & External API Module Tests', () => {
   });
 
   test('GET /api/local-context/:userId - should aggregate Maps, Census, AGMARKNET, and Schemes', async () => {
-    // 1. Create a user with Varanasi district
     const userRes = await fetch(`${baseUrl}/users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -38,7 +37,6 @@ describe('Local Context & External API Module Tests', () => {
     const { userId } = await userRes.json();
     testUserId = userId;
 
-    // 2. Fetch local context
     const res = await fetch(`${baseUrl}/local-context/${testUserId}`);
     assert.strictEqual(res.status, 200);
     const data = await res.json();
@@ -47,22 +45,14 @@ describe('Local Context & External API Module Tests', () => {
     assert.strictEqual(data.district, 'Varanasi');
     assert.ok(data.localContext);
     assert.strictEqual(data.localContext.district, 'Varanasi');
-
-    // Verify Geography & Maps
     assert.ok(data.localContext.geography.coordinates);
     assert.ok(Array.isArray(data.localContext.geography.nearbyVillages));
     assert.ok(data.localContext.geography.infrastructure.markets.length > 0);
-
-    // Verify Census Demographics
     assert.ok(data.localContext.demographics.population > 0);
     assert.ok(data.localContext.demographics.literacyRate);
     assert.ok(data.localContext.demographics.occupations);
-
-    // Verify AGMARKNET Mandi Economics
     assert.ok(data.localContext.mandiEconomics.reportingMandi);
     assert.ok(data.localContext.mandiEconomics.keyCommodities.length > 0);
-
-    // Verify Schemes catalog indexed count
     assert.ok(data.localContext.schemesAvailableCount >= 6);
   });
 

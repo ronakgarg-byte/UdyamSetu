@@ -9,15 +9,6 @@
     "migrate": "node src/db/migrate.js",
     "test": "node --test tests/**/*.test.js"
   },
-  "keywords": [
-    "sih2026",
-    "udyam-setu",
-    "financial-structuring",
-    "micro-enterprises",
-    "schemes"
-  ],
-  "author": "Udyam Setu Team",
-  "license": "ISC",
   "dependencies": {
     "axios": "^1.7.9",
     "cors": "^2.8.5",

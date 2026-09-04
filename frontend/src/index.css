@@ -22,7 +22,6 @@ body {
   font-family: 'Poppins', 'Noto Sans Devanagari', sans-serif;
 }
 
-/* Custom scrollbar for mobile questionnaire container */
 ::-webkit-scrollbar {
   width: 6px;
 }

@@ -93,147 +93,235 @@ export default function QuestionnairePage() {
         <p className="text-xs font-semibold mb-1" style={{ color: "#a36a2d" }}>
           {t("sectionOf")} {qStep + 1} / 6
         </p>
-        <h2 className="font-heading text-xl font-bold mb-6" style={{ color: "#1f3a5f" }}>
+        <h2 className="font-heading text-xl font-bold mb-4" style={{ color: "#1f3a5f" }}>
           {sectionTitles[qStep]}
         </h2>
 
         {/* Section A: Your business */}
         {qStep === 0 && (
-          <>
+          <div>
+            <VoiceRow
+              textToRead={`${t("secA")}. ${t("qBizType")} ${t("qBizWhat")}`}
+              onVoiceInput={(val) => {
+                if (!biz.type) {
+                  setBiz((prev) => ({ ...prev, type: String(val) }));
+                } else {
+                  setBiz((prev) => ({ ...prev, what: String(val) }));
+                }
+              }}
+              fieldType="text"
+            />
+
             <Field label={t("qBizType")}>
               <TextInput
                 value={biz.type}
-                onChange={(e) => setBiz({ ...biz, type: e.target.value })}
-                placeholder="e.g. Grocery / Kirana"
+                onChange={(v) => setBiz({ ...biz, type: v })}
+                placeholder="e.g. Kirana store, tea stall, tailoring"
               />
             </Field>
             <Field label={t("qBizWhat")}>
               <TextInput
                 value={biz.what}
-                onChange={(e) => setBiz({ ...biz, what: e.target.value })}
-                placeholder="e.g. Grains, spices, packaged snacks"
+                onChange={(v) => setBiz({ ...biz, what: v })}
+                placeholder="e.g. Spices, snacks, daily essentials"
               />
             </Field>
-            <Field label={t("qWorkers")}>
+            <Field label={t("qWorkers")} optional>
               <TextInput
                 type="number"
                 value={biz.workers}
-                onChange={(e) => setBiz({ ...biz, workers: e.target.value })}
-                placeholder="1"
+                onChange={(v) => setBiz({ ...biz, workers: v })}
+                placeholder="e.g. 2"
               />
             </Field>
-            <Field label={t("qHours")}>
+            <Field label={t("qHours")} optional>
               <TextInput
                 value={biz.hours}
-                onChange={(e) => setBiz({ ...biz, hours: e.target.value })}
-                placeholder="e.g. 8:00 AM - 8:00 PM"
+                onChange={(v) => setBiz({ ...biz, hours: v })}
+                placeholder="e.g. 7 AM - 9 PM"
               />
             </Field>
-          </>
+          </div>
         )}
 
         {/* Section B: Sales & revenue */}
         {qStep === 1 && (
-          <>
-            <Field label={t("qCustomersPerDay")}>
+          <div>
+            <VoiceRow
+              textToRead={`${t("secB")}. ${t("qDailySales")}`}
+              onVoiceInput={(val) => {
+                if (typeof val === 'number') {
+                  setSales((prev) => ({
+                    ...prev,
+                    dailySales: String(val),
+                    monthlyRevenue: String(val * 30),
+                  }));
+                }
+              }}
+              fieldType="number"
+            />
+
+            <Field label={t("qCustomersPerDay")} optional>
               <TextInput
                 type="number"
                 value={sales.customersPerDay}
-                onChange={(e) => setSales({ ...sales, customersPerDay: e.target.value })}
-                placeholder="40"
+                onChange={(v) => setSales({ ...sales, customersPerDay: v })}
+                placeholder="e.g. 40"
               />
             </Field>
             <Field label={t("qDailySales")}>
               <TextInput
                 type="number"
                 value={sales.dailySales}
-                onChange={(e) => setSales({ ...sales, dailySales: e.target.value })}
-                placeholder="2000"
+                onChange={(v) => {
+                  const ds = v;
+                  const mr = ds ? String(Number(ds) * 30) : sales.monthlyRevenue;
+                  setSales({ ...sales, dailySales: ds, monthlyRevenue: mr });
+                }}
+                placeholder="e.g. 2000"
               />
             </Field>
-            <Field label={t("qMonthlyRevenue")} hint={t("optional")}>
+            <Field label={t("qMonthlyRevenue")} optional>
               <TextInput
                 type="number"
                 value={sales.monthlyRevenue}
-                onChange={(e) => setSales({ ...sales, monthlyRevenue: e.target.value })}
-                placeholder="60000"
+                onChange={(v) => setSales({ ...sales, monthlyRevenue: v })}
+                placeholder="e.g. 60000"
               />
             </Field>
-          </>
+          </div>
         )}
 
         {/* Section C: Monthly expenses */}
         {qStep === 2 && (
-          <>
+          <div>
+            <VoiceRow
+              textToRead={`${t("secC")}. ${t("EXPENSE_FIELDS")?.[0]?.hi || "किराया, कच्चा माल और बिजली का मासिक खर्च बताएं"}`}
+              onVoiceInput={(val) => {
+                if (typeof val === 'number') {
+                  setExpenses((prev) => ({
+                    ...prev,
+                    rawMaterials: prev.rawMaterials ? prev.rawMaterials : String(val),
+                  }));
+                }
+              }}
+              fieldType="number"
+            />
+
             {EXPENSE_FIELDS.map((f) => (
-              <Field key={f.key} label={opt(f)} hint={f.key === "emi" ? t("optional") : undefined}>
+              <Field key={f.key} label={opt(f)} optional>
                 <TextInput
                   type="number"
                   value={expenses[f.key] || ""}
-                  onChange={(e) => setExpenses({ ...expenses, [f.key]: e.target.value })}
-                  placeholder="0"
+                  onChange={(v) => setExpenses({ ...expenses, [f.key]: v })}
+                  placeholder="₹ 0"
                 />
               </Field>
             ))}
-          </>
+          </div>
         )}
 
         {/* Section D: Your customers */}
         {qStep === 3 && (
-          <Field label={t("qCustomersWho")} hint={t("optional")}>
-            <div className="flex flex-wrap gap-2 pt-1">
+          <div>
+            <VoiceRow
+              textToRead={`${t("secD")}. ${t("qCustomersWho")}`}
+              onVoiceInput={(val) => {
+                if (val && typeof val === 'string') {
+                  toggle(customers, val, setCustomers);
+                }
+              }}
+              fieldType="chips"
+              options={CUSTOMER_OPTIONS}
+            />
+
+            <label className="text-xs font-semibold block mb-2" style={{ color: "#5b4636" }}>
+              {t("qCustomersWho")}
+            </label>
+            <div className="flex flex-wrap gap-2 mb-4">
               {CUSTOMER_OPTIONS.map((c) => (
                 <Chip
                   key={c.key}
-                  active={customers.includes(c.key)}
-                  onClick={() => toggle(customers, setCustomers, c.key)}
-                >
-                  {opt(c)}
-                </Chip>
+                  label={opt(c)}
+                  selected={customers.includes(c.key)}
+                  onClick={() => toggle(customers, c.key, setCustomers)}
+                />
               ))}
             </div>
-          </Field>
+          </div>
         )}
 
         {/* Section E: Competition nearby */}
         {qStep === 4 && (
-          <>
+          <div>
+            <VoiceRow
+              textToRead={`${t("secE")}. ${t("qCompetitionCount")}`}
+              onVoiceInput={(val) => {
+                if (typeof val === 'number') {
+                  setCompetition((prev) => ({ ...prev, count: String(val) }));
+                }
+              }}
+              fieldType="number"
+            />
+
             <Field label={t("qCompetitionCount")}>
               <TextInput
                 type="number"
                 value={competition.count}
-                onChange={(e) => setCompetition({ ...competition, count: e.target.value })}
-                placeholder="2"
+                onChange={(v) => setCompetition({ ...competition, count: v })}
+                placeholder="e.g. 3"
               />
             </Field>
-            <Field label={t("qCompetitionWhere")}>
+            <Field label={t("qCompetitionWhere")} optional>
               <TextInput
                 value={competition.where}
-                onChange={(e) => setCompetition({ ...competition, where: e.target.value })}
-                placeholder="e.g. Near main village square"
+                onChange={(v) => setCompetition({ ...competition, where: v })}
+                placeholder="e.g. Same street, across the market"
               />
             </Field>
-          </>
+          </div>
         )}
 
         {/* Section F: Biggest problem */}
         {qStep === 5 && (
-          <Field label={t("qProblem")} hint={t("optional")}>
-            <div className="flex flex-wrap gap-2 pt-1">
-              {PROBLEM_OPTIONS.map((p) => (
-                <Chip
-                  key={p.key}
-                  active={problems.includes(p.key)}
-                  onClick={() => toggle(problems, setProblems, p.key)}
-                >
-                  {opt(p)}
-                </Chip>
-              ))}
-            </div>
-          </Field>
-        )}
+          <div>
+            <VoiceRow
+              textToRead={`${t("secF")}. ${t("qProblem")}`}
+              onVoiceInput={(val) => {
+                if (val && typeof val === 'string') {
+                  toggle(problems, val, setProblems);
+                }
+              }}
+              fieldType="chips"
+              options={PROBLEM_OPTIONS}
+            />
 
-        <VoiceRow label={t("speak")} />
+            <label className="text-xs font-semibold block mb-2" style={{ color: "#5b4636" }}>
+              {t("qProblem")}
+            </label>
+            <div className="flex flex-col gap-2 mb-4">
+              {PROBLEM_OPTIONS.map((p) => {
+                const selected = problems.includes(p.key);
+                return (
+                  <button
+                    key={p.key}
+                    type="button"
+                    onClick={() => toggle(problems, p.key, setProblems)}
+                    className="text-xs font-medium p-3 rounded-xl border transition-all text-left flex items-center justify-between"
+                    style={{
+                      background: selected ? "#1f3a5f" : "#fffdf9",
+                      color: selected ? "#fffdf9" : "#5b4636",
+                      borderColor: selected ? "#1f3a5f" : "#e4d9c7",
+                    }}
+                  >
+                    <span>{opt(p)}</span>
+                    {selected && <span className="font-bold text-xs ml-2">✓</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );

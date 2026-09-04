@@ -1,15 +1,5 @@
 /**
  * Government Schemes Matching Engine
- * SIH 2026 Problem Statement SIH26091
- * 
- * Modular rule-based matcher designed to accept:
- * - User Demographics (gender, age, district)
- * - Business Info (type, what)
- * - Financial Metrics (revenue, net profit, working capital, debt ratio)
- * - Selected Business Problems (working capital, loan repayment, raw cost, etc.)
- * - Aggregated Hyper-Local Context (demographics, mandi prices, banking density)
- * 
- * Contract is designed so this rule engine can be swapped seamlessly with a trained ML model.
  */
 
 const SCHEMES_MASTER = [
@@ -104,7 +94,7 @@ const SCHEMES_MASTER = [
     name_hi: 'प्रधानमंत्री मुद्रा योजना (तरुण)',
     ministry_en: 'Ministry of Finance / MSME',
     ministry_hi: 'वित्त मंत्रालय / एमएसएमई',
-    description_en: 'Higher tier credit from ₹5,00,000 up to ₹10,00,000 (and up to ₹20 lakh under updated limits) for established enterprises looking for scale.',
+    description_en: 'Higher tier credit from ₹5,00,000 up to ₹10,00,000 for established enterprises looking for scale.',
     description_hi: 'स्थापित व्यवसायों के बड़े पैमाने पर विस्तार के लिए ₹5,00,000 से ₹10,00,000 तक का उच्च श्रेणी का ऋण।',
     loanCeiling: 1000000,
     interestSubsidyPct: 0.0,
@@ -134,9 +124,6 @@ const SCHEMES_MASTER = [
   },
 ];
 
-/**
- * Matches government schemes against user profile, financial metrics, and local context.
- */
 function matchSchemes(user = {}, business = {}, financial = {}, problems = [], localContext = {}) {
   const revenue = financial.revenue || 0;
   const userGender = (user.gender || '').toLowerCase();
@@ -148,7 +135,7 @@ function matchSchemes(user = {}, business = {}, financial = {}, problems = [], l
     // 1. Revenue Matcher Rules
     if (scheme.code === 'pm_svanidhi') {
       if (revenue > 0 && revenue < 15000) {
-        score = 88; // Exact prototype match
+        score = 88;
       } else if (revenue >= 15000 && revenue <= 30000) {
         score += 5;
       } else if (revenue > 50000) {
@@ -156,19 +143,19 @@ function matchSchemes(user = {}, business = {}, financial = {}, problems = [], l
       }
     } else if (scheme.code === 'pmegp') {
       if (safeProblems.includes('workingcap') || safeProblems.includes('loanrepay')) {
-        score = 81; // Exact prototype match
+        score = 81;
       } else if (revenue >= 15000) {
         score += 8;
       }
     } else if (scheme.code === 'mudra_tarun') {
       if (revenue >= 50000) {
-        score = 79; // Exact prototype match
+        score = 79;
       } else if (revenue < 25000) {
         score -= 20;
       }
     } else if (scheme.code === 'mudra_shishu') {
       if (revenue <= 30000) {
-        score = Math.max(score, 74); // Exact prototype match baseline
+        score = Math.max(score, 74);
       }
     } else if (scheme.code === 'mudra_kishore') {
       if (revenue >= 20000 && revenue <= 60000) {
@@ -192,12 +179,11 @@ function matchSchemes(user = {}, business = {}, financial = {}, problems = [], l
     const matchedProblems = scheme.targetProblems.filter((p) => safeProblems.includes(p));
     score += matchedProblems.length * 2;
 
-    // 3. Local Context Alignment (Rural demographic modifier)
+    // 3. Local Context Alignment
     if (localContext?.demographics?.ruralRatio && scheme.code === 'pmegp') {
-      score += 2; // Rural subsidy boost
+      score += 2;
     }
 
-    // Clamp score between 40 and 96
     const finalMatch = Math.min(96, Math.max(40, Math.round(score)));
 
     return {
@@ -217,9 +203,7 @@ function matchSchemes(user = {}, business = {}, financial = {}, problems = [], l
     };
   });
 
-  // Sort descending by match percentage
   evaluatedSchemes.sort((a, b) => b.matchPercentage - a.matchPercentage);
-
   return evaluatedSchemes;
 }
 

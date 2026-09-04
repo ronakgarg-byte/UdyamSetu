@@ -1,11 +1,5 @@
 const axios = require('axios');
 
-/**
- * Google Maps Platform Integration Service
- * Utilizes Geocoding, Places, and Routes APIs to extract hyper-local rural infrastructure data.
- */
-
-// Fallback rural datasets for key districts if Google Maps API key is not configured or offline
 const DISTRICT_GEO_DEFAULTS = {
   varanasi: {
     lat: 25.3176,
@@ -73,18 +67,14 @@ async function getLocalMapsContext(locationName = 'Varanasi') {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
   const normalizedKey = (locationName || 'varanasi').toLowerCase().trim();
 
-  // If live Google Maps API key is configured, query live APIs with error resilience
   if (apiKey && apiKey !== 'YOUR_GOOGLE_MAPS_API_KEY') {
     try {
-      // 1. Geocoding API
       const geoUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(locationName)}&key=${apiKey}`;
       const geoRes = await axios.get(geoUrl, { timeout: 4000 });
       const geoResult = geoRes.data.results?.[0];
 
       if (geoResult) {
         const { lat, lng } = geoResult.geometry.location;
-
-        // 2. Places API (Nearby Search for Markets and Commercial Hubs)
         const placesUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=5000&type=market&key=${apiKey}`;
         const placesRes = await axios.get(placesUrl, { timeout: 4000 }).catch(() => null);
 
@@ -112,7 +102,6 @@ async function getLocalMapsContext(locationName = 'Varanasi') {
     }
   }
 
-  // Fallback to rich regional dataset
   const baseData = DISTRICT_GEO_DEFAULTS[normalizedKey] || DISTRICT_GEO_DEFAULTS.default;
   return {
     source: 'Google Maps Local GIS Provider',

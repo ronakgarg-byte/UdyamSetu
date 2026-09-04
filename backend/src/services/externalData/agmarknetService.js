@@ -1,8 +1,3 @@
-/**
- * AGMARKNET Mandi & Commodity Pricing Service
- * Pulls wholesale commodity trends, modal prices, and mandi benchmarking.
- */
-
 const AGMARKNET_COMMODITIES = {
   varanasi: [
     { commodity: 'Wheat (Gehun)', unit: 'Quintal (100kg)', modalPrice: 2420, minPrice: 2350, maxPrice: 2480, trend: 'stable', date: '2026-09-02' },

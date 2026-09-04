@@ -79,6 +79,13 @@ export const api = {
   getSchemes: (userId) => request(`/schemes/${userId}`),
   getLocalContext: (userId) => request(`/local-context/${userId}`),
 
+  // 9. AI Chatbot
+  sendChatMessage: (userId, { message, lang = 'en', history = [] }) =>
+    request(`/chat/${userId}`, {
+      method: 'POST',
+      body: JSON.stringify({ message, lang, history }),
+    }),
+
   // Full summary
   getSummary: (userId) => request(`/summary/${userId}`),
 };

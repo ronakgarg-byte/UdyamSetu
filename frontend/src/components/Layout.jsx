@@ -1,115 +1,129 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Languages, Loader2, Volume2, VolumeX, Mic } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 export default function Layout({
-  children,
   title,
-  progress = 0,
-  showTopBar = true,
+  showBack = true,
   onBack,
+  progress,
+  children,
+  actionLabel,
   onNext,
-  nextLabel,
   loading = false,
-  showBottomBar = true,
-  customBottom,
 }) {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { lang, setLang, t } = useApp();
-
-  const handleBack = () => {
-    if (onBack) {
-      onBack();
-    } else {
-      navigate(-1);
-    }
-  };
+  const { lang, setLang, t, voiceMode, toggleVoiceMode } = useApp();
 
   return (
-    <div
-      className="min-h-screen w-full flex items-center justify-center p-4 selection:bg-[#e8a33d]/30"
-      style={{
-        background: "linear-gradient(180deg,#f3ede0 0%,#ece2cf 100%)",
-        fontFamily: "'Inter', 'Noto Sans Devanagari', sans-serif",
-      }}
-    >
-      <div
-        className="relative w-full flex flex-col overflow-hidden rounded-3xl border shadow-2xl transition-all"
-        style={{
-          maxWidth: 420,
-          height: 800,
-          borderColor: "#e4d9c7",
-          backgroundColor: "#fffdf9",
-        }}
-      >
-        {/* ---------------- Top Bar ---------------- */}
-        {showTopBar && (
-          <div
-            className="flex items-center justify-between px-5 pt-5 pb-3 border-b"
-            style={{ borderColor: "#efe6d6" }}
-          >
-            <button
-              onClick={handleBack}
-              className="p-1.5 -ml-1 rounded-full hover:bg-stone-200/50 transition-colors"
-              aria-label={t("back")}
-            >
-              <ChevronLeft size={22} color="#5b4636" />
-            </button>
-            <span
-              className="font-heading text-sm font-semibold truncate max-w-[220px]"
-              style={{ color: "#1f3a5f" }}
-            >
-              {title}
+    <div className="w-full max-w-md mx-auto min-h-screen bg-[#f3ede0] flex flex-col justify-between shadow-2xl relative">
+      {/* Top sticky bar */}
+      <header className="sticky top-0 z-20 px-4 py-3 bg-[#f3ede0]/95 backdrop-blur border-b border-[#e4d9c7]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {showBack && onBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                aria-label="Go Back"
+                className="p-1.5 rounded-full hover:bg-[#e4d9c7] text-[#5b4636] transition"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+            )}
+            <span className="font-heading font-bold text-sm tracking-tight text-[#1f3a5f]">
+              {t("appName")}
             </span>
-            <button
-              onClick={() => setLang(lang === "en" ? "hi" : "en")}
-              className="rounded-full border px-2.5 py-1 text-xs font-semibold hover:bg-[#e8a33d]/10 transition-colors"
-              style={{ borderColor: "#e4d9c7", color: "#a36a2d" }}
-            >
-              {lang === "en" ? "हिं" : "EN"}
-            </button>
           </div>
-        )}
 
-        {/* ---------------- Progress Bar ---------------- */}
-        {showTopBar && (
-          <div className="h-1 w-full" style={{ backgroundColor: "#efe6d6" }}>
+          <div className="flex items-center gap-2">
+            {/* Voice Mode Accessibility Toggle */}
+            <button
+              type="button"
+              onClick={toggleVoiceMode}
+              title={voiceMode ? t("voiceModeOn") : t("voiceModeOff")}
+              className={`flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-lg border transition ${
+                voiceMode
+                  ? "bg-[#3f6b4f] text-white border-[#3f6b4f] shadow-sm animate-pulse"
+                  : "bg-[#fffdf9] text-[#5b4636] border-[#e4d9c7] hover:bg-[#efe6d6]"
+              }`}
+            >
+              {voiceMode ? (
+                <>
+                  <Volume2 className="w-3 h-3 text-white" />
+                  <span>{t("voiceMode")}</span>
+                </>
+              ) : (
+                <>
+                  <VolumeX className="w-3 h-3 text-[#8a7a68]" />
+                  <span className="opacity-75">{t("voiceMode")}</span>
+                </>
+              )}
+            </button>
+
+            {/* Language Switcher */}
+            <div className="flex items-center gap-1 text-xs font-semibold">
+              <Languages className="w-3.5 h-3.5 text-[#a36a2d]" />
+              <button
+                type="button"
+                onClick={() => setLang("en")}
+                className={`px-2 py-0.5 rounded transition ${
+                  lang === "en"
+                    ? "bg-[#1f3a5f] text-white"
+                    : "bg-[#e4d9c7] text-[#5b4636]"
+                }`}
+              >
+                EN
+              </button>
+              <button
+                type="button"
+                onClick={() => setLang("hi")}
+                className={`px-2 py-0.5 rounded transition ${
+                  lang === "hi"
+                    ? "bg-[#1f3a5f] text-white"
+                    : "bg-[#e4d9c7] text-[#5b4636]"
+                }`}
+              >
+                हिन्दी
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        {typeof progress === "number" && (
+          <div className="mt-2.5 h-1 w-full bg-[#e4d9c7] rounded-full overflow-hidden">
             <div
-              className="h-1 transition-all duration-300 ease-out"
-              style={{ width: `${Math.min(100, Math.max(0, progress))}%`, backgroundColor: "#e8a33d" }}
+              className="h-full bg-[#1f3a5f] transition-all duration-300 rounded-full"
+              style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
             />
           </div>
         )}
+      </header>
 
-        {/* ---------------- Scrollable Content ---------------- */}
-        <div className="flex-1 overflow-y-auto px-6 py-6">
-          {children}
-        </div>
+      {/* Main scrollable body */}
+      <main className="flex-1 px-5 py-5 overflow-y-auto">{children}</main>
 
-        {/* ---------------- Bottom Action Bar ---------------- */}
-        {showBottomBar && (
-          <div
-            className="px-6 pb-6 pt-3 border-t"
-            style={{ borderColor: "#efe6d6", backgroundColor: "#fffdf9" }}
+      {/* Bottom action bar */}
+      {onNext && (
+        <footer className="sticky bottom-0 z-20 px-5 py-4 bg-[#f3ede0]/95 backdrop-blur border-t border-[#e4d9c7]">
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-heading font-semibold text-sm shadow-md transition-all active:scale-[0.98] disabled:opacity-70"
+            style={{ background: "#1f3a5f", color: "#fffdf9" }}
           >
-            {customBottom ? (
-              customBottom
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>{t("saving")}</span>
+              </>
             ) : (
-              <button
-                onClick={onNext}
-                disabled={loading}
-                className="w-full rounded-2xl py-3.5 font-heading text-base font-semibold flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all disabled:opacity-50"
-                style={{ backgroundColor: "#1f3a5f", color: "#fff" }}
-              >
-                {loading ? t("saving") : nextLabel || t("next")}
-                {!loading && <ChevronRight size={18} />}
-              </button>
+              <span>{actionLabel || t("next")}</span>
             )}
-          </div>
-        )}
-      </div>
+          </button>
+        </footer>
+      )}
     </div>
   );
 }

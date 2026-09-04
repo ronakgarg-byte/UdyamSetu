@@ -3,17 +3,6 @@
  * Ports the exact calculation logic from the Udyam Setu prototype.
  */
 
-const EXPENSE_KEYS = [
-  'rent',
-  'electricity',
-  'raw_materials',
-  'rawMaterials',
-  'transport',
-  'wages',
-  'packaging',
-  'other',
-];
-
 function calculateFinancialMetrics(sales = {}, expenses = {}, items = [], problems = []) {
   // 1. Revenue: monthly revenue || (daily sales * 30) || 0
   const monthlyRevenue = Number(sales.monthly_revenue ?? sales.monthlyRevenue) || 0;

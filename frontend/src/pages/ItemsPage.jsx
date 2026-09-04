@@ -1,24 +1,34 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Field, TextInput, Chip } from '../components/Common';
 import Layout from '../components/Layout';
+import { Plus, Trash2 } from 'lucide-react';
 import { api } from '../services/api';
 
 export default function ItemsPage() {
   const navigate = useNavigate();
-  const { t, userId, items, setItems } = useApp();
+  const { items, setItems, userId, t } = useApp();
   const [saving, setSaving] = useState(false);
 
-  const addItem = () =>
-    setItems([...items, { desc: "", sellPrice: "", costPrice: "", seasonal: "no" }]);
+  const addItem = () => {
+    setItems([
+      ...items,
+      { desc: '', sellPrice: '', costPrice: '', seasonal: 'no' },
+    ]);
+  };
 
-  const removeItem = (i) =>
-    setItems(items.filter((_, idx) => idx !== i));
+  const removeItem = (index) => {
+    if (items.length > 1) {
+      setItems(items.filter((_, i) => i !== index));
+    }
+  };
 
-  const updateItem = (i, key, val) =>
-    setItems(items.map((it, idx) => (idx === i ? { ...it, [key]: val } : it)));
+  const updateItem = (index, field, value) => {
+    const updated = [...items];
+    updated[index] = { ...updated[index], [field]: value };
+    setItems(updated);
+  };
 
   const handleNext = async () => {
     if (userId) {
@@ -37,90 +47,102 @@ export default function ItemsPage() {
   return (
     <Layout
       title={t("itemsTitle")}
-      progress={80}
+      progress={75}
       onBack={() => navigate('/questionnaire')}
       onNext={handleNext}
-      nextLabel={t("save")}
+      actionLabel={t("save")}
       loading={saving}
     >
       <div>
         <h2 className="font-heading text-xl font-bold mb-1" style={{ color: "#1f3a5f" }}>
           {t("itemsTitle")}
         </h2>
-        <p className="text-sm mb-6" style={{ color: "#8a7a68" }}>
+        <p className="text-xs mb-6" style={{ color: "#8a7a68" }}>
           {t("itemsSub")}
         </p>
 
-        {items.map((it, i) => (
-          <div
-            key={i}
-            className="rounded-2xl border p-4 mb-4 relative shadow-sm"
-            style={{ borderColor: "#e4d9c7", backgroundColor: "#fffdf9" }}
-          >
-            {items.length > 1 && (
-              <button
-                type="button"
-                onClick={() => removeItem(i)}
-                className="absolute top-3.5 right-3.5 p-1 rounded-full hover:bg-red-50 text-red-600 transition-colors"
-                aria-label="remove"
-              >
-                <Trash2 size={16} />
-              </button>
-            )}
-            <Field label={t("itemDesc")}>
-              <TextInput
-                value={it.desc || ''}
-                onChange={(e) => updateItem(i, "desc", e.target.value)}
-                placeholder="e.g. Wheat Flour (10kg)"
-              />
-            </Field>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label={t("sellPrice")}>
+        <div className="space-y-6">
+          {items.map((item, idx) => (
+            <div
+              key={idx}
+              className="p-4 rounded-xl border relative"
+              style={{ background: "#fffdf9", borderColor: "#e4d9c7" }}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold" style={{ color: "#a36a2d" }}>
+                  #{idx + 1}
+                </span>
+                {items.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeItem(idx)}
+                    className="p-1 text-red-600 hover:bg-red-50 rounded"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Item Description */}
+              <Field label={t("itemDesc")}>
                 <TextInput
-                  type="number"
-                  value={it.sellPrice || ''}
-                  onChange={(e) => updateItem(i, "sellPrice", e.target.value)}
-                  placeholder="340"
+                  value={item.desc}
+                  onChange={(v) => updateItem(idx, 'desc', v)}
+                  placeholder="e.g. Mustard oil 1L, Shirt, Chai"
                 />
               </Field>
-              <Field label={t("costPrice")}>
-                <TextInput
-                  type="number"
-                  value={it.costPrice || ''}
-                  onChange={(e) => updateItem(i, "costPrice", e.target.value)}
-                  placeholder="290"
-                />
-              </Field>
-            </div>
-            <div className="flex items-center justify-between pt-1">
-              <span className="text-sm font-medium" style={{ color: "#33261a" }}>
-                {t("seasonal")}
-              </span>
-              <div className="flex gap-2">
-                <Chip
-                  active={it.seasonal === "yes"}
-                  onClick={() => updateItem(i, "seasonal", "yes")}
-                >
-                  {t("yes")}
-                </Chip>
-                <Chip
-                  active={it.seasonal === "no"}
-                  onClick={() => updateItem(i, "seasonal", "no")}
-                >
-                  {t("no")}
-                </Chip>
+
+              {/* Selling & Cost Price */}
+              <div className="grid grid-cols-2 gap-3">
+                <Field label={t("sellPrice")}>
+                  <TextInput
+                    type="number"
+                    value={item.sellPrice}
+                    onChange={(v) => updateItem(idx, 'sellPrice', v)}
+                    placeholder="₹ 0"
+                  />
+                </Field>
+                <Field label={t("costPrice")} optional>
+                  <TextInput
+                    type="number"
+                    value={item.costPrice}
+                    onChange={(v) => updateItem(idx, 'costPrice', v)}
+                    placeholder="₹ 0"
+                  />
+                </Field>
+              </div>
+
+              {/* Seasonal */}
+              <div className="mt-2">
+                <label className="text-xs font-semibold block mb-1.5" style={{ color: "#5b4636" }}>
+                  {t("seasonal")}
+                </label>
+                <div className="flex gap-2">
+                  <Chip
+                    label={t("no")}
+                    selected={item.seasonal === 'no'}
+                    onClick={() => updateItem(idx, 'seasonal', 'no')}
+                  />
+                  <Chip
+                    label={t("yes")}
+                    selected={item.seasonal === 'yes'}
+                    onClick={() => updateItem(idx, 'seasonal', 'yes')}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
 
+        {/* Add Another Item Button */}
         <button
           type="button"
           onClick={addItem}
-          className="w-full flex items-center justify-center gap-2 rounded-2xl border border-dashed py-3.5 text-sm font-semibold transition-all hover:bg-[#e8a33d]/10 active:scale-[0.99]"
-          style={{ borderColor: "#e8a33d", color: "#a36a2d" }}
+          className="w-full mt-4 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-dashed text-xs font-semibold transition"
+          style={{ borderColor: "#a36a2d", color: "#a36a2d", background: "#efe6d6" }}
         >
-          <Plus size={16} /> {t("addItem")}
+          <Plus className="w-4 h-4" />
+          <span>{t("addItem")}</span>
         </button>
       </div>
     </Layout>
