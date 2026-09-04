@@ -4,7 +4,7 @@ const crypto = require('crypto');
 async function saveBusiness(req, res) {
   try {
     const { userId } = req.params;
-    const { type, what, workers, hours } = req.body;
+    const { type, what, workers, hours, address, location, district, state, pincode, lat, lng } = req.body;
 
     if (!userId) {
       return res.status(400).json({ error: 'User ID is required' });
@@ -26,7 +26,7 @@ async function saveBusiness(req, res) {
          RETURNING *`,
         [userId, type || '', what || '', workersNum, hours || '']
       );
-      return res.json({ success: true, business: result.rows[0] });
+      return res.json({ success: true, business: { ...result.rows[0], address, location, district, state, pincode, lat, lng } });
     } else {
       const existing = inMemoryStore.businesses.get(userId) || {
         id: crypto.randomUUID(),
@@ -39,6 +39,13 @@ async function saveBusiness(req, res) {
         what: what || '',
         workers: workersNum,
         hours: hours || '',
+        address: address || existing.address || '',
+        location: location || existing.location || '',
+        district: district || existing.district || '',
+        state: state || existing.state || '',
+        pincode: pincode || existing.pincode || '',
+        lat: lat || existing.lat || null,
+        lng: lng || existing.lng || null,
         updated_at: new Date().toISOString(),
       };
       inMemoryStore.businesses.set(userId, business);

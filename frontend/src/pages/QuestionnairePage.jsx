@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Field, TextInput, Chip, VoiceRow } from '../components/Common';
 import Layout from '../components/Layout';
+import GoogleLocationPicker from '../components/GoogleLocationPicker';
 import { EXPENSE_FIELDS, CUSTOMER_OPTIONS, PROBLEM_OPTIONS } from '../i18n/translations';
 import { api } from '../services/api';
 import { stopSpeaking } from '../utils/speechUtils';
@@ -147,6 +148,11 @@ export default function QuestionnairePage() {
                 placeholder="e.g. 7 AM - 9 PM"
               />
             </Field>
+
+            {/* Google Map Interactive Location Picker */}
+            <div className="mt-5 pt-3 border-t border-[#e4d9c7]">
+              <GoogleLocationPicker />
+            </div>
           </div>
         )}
 

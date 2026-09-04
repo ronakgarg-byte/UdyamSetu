@@ -135,6 +135,32 @@ export const T = {
     en: "Could not connect to AI advisor. Here is personalized advice based on your numbers:",
     hi: "एआई सलाहकार से संपर्क नहीं हो सका। आपके आंकड़ों के आधार पर व्यक्तिगत सलाह:",
   },
+
+  // Google Maps & Business Location
+  qLocationTitle: { en: "Business / Shop Location", hi: "दुकान / व्यवसाय का स्थान" },
+  qLocationSub: {
+    en: "Pinpoint your shop on Google Map for accurate mandi rates, nearby footfall & local schemes",
+    hi: "सटीक मंडी भाव, आस-पास के ग्राहक मांग और स्थानीय योजनाओं के लिए अपनी दुकान मैप पर चुनें",
+  },
+  detectLocation: { en: "Use Current Location (GPS)", hi: "वर्तमान स्थान का पता लगाएं (GPS)" },
+  detectingLocation: { en: "Detecting GPS location...", hi: "GPS स्थान खोज रहे हैं..." },
+  locationDetected: { en: "Location pinned successfully!", hi: "स्थान सफलतापूर्वक मैप पर सेट हुआ!" },
+  dragPinHint: {
+    en: "Click or drag the red pin on the map to adjust exact shop location",
+    hi: "दुकान का सही स्थान सेट करने के लिए मैप पर क्लिक करें या लाल पिन को हिलाएं",
+  },
+  searchLocationPlaceholder: {
+    en: "Search area, street, market, landmark or city...",
+    hi: "इलाका, सड़क, मुख्य बाजार, लैंडमार्क या शहर खोजें...",
+  },
+  shopAddress: { en: "Shop Address / Landmark", hi: "दुकान का पता / मुख्य लैंडमार्क" },
+  shopDistrict: { en: "District / City", hi: "जिला / शहर" },
+  shopState: { en: "State", hi: "राज्य" },
+  shopPincode: { en: "Pincode", hi: "पिनकोड" },
+  openInGoogleMaps: { en: "Open in Google Maps", hi: "Google Maps में देखें" },
+  gpsCoordinates: { en: "GPS Coordinates", hi: "जीपीएस निर्देशांक" },
+  mapSatellite: { en: "Satellite View", hi: "सैटेलाइट दृश्य" },
+  mapRoadmap: { en: "Map View", hi: "मैप दृश्य" },
 };
 
 export const EXPENSE_FIELDS = [
