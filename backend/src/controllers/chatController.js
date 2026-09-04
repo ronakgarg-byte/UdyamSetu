@@ -13,12 +13,18 @@ async function handleChatMessage(req, res) {
       return res.status(400).json({ error: 'Message content is required' });
     }
 
-    const reply = await generateAdvisoryResponse(userId, message.trim(), lang, history, clientContext);
+    const result = await generateAdvisoryResponse(userId, message.trim(), lang, history, clientContext);
+
+    const reply = typeof result === 'string' ? result : (result.reply || '');
+    const thoughts = typeof result === 'object' ? (result.thoughts || null) : null;
+    const engine = typeof result === 'object' ? (result.engine || 'gemini-thinking') : 'gemini-thinking';
 
     return res.json({
       success: true,
       userId,
       reply,
+      thoughts,
+      engine,
       timestamp: new Date().toISOString(),
     });
   } catch (err) {

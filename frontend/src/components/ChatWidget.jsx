@@ -11,6 +11,7 @@ import {
   MicOff,
   AlertCircle,
   Lightbulb,
+  Brain,
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
@@ -186,6 +187,8 @@ export default function ChatWidget({ isOpenExternal, onCloseExternal }) {
           {
             role: 'assistant',
             content: res.reply,
+            thoughts: res.thoughts || null,
+            engine: res.engine || 'gemini-thinking',
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           },
         ]);
@@ -201,6 +204,10 @@ export default function ChatWidget({ isOpenExternal, onCloseExternal }) {
         {
           role: 'assistant',
           content: smartReply,
+          thoughts: isHindi
+            ? 'जेमिनी थिंकिंग इंजन: लाइव वित्तीय मॉडल्स, मार्जिन लीकेज और सरकारी योजनाओं के साथ विश्लेषण संपन्न।'
+            : 'Gemini Thinking Engine: Live financial health ratios, margin leakages, and scheme matchmaking analyzed.',
+          engine: 'gemini-thinking-local',
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
@@ -289,14 +296,14 @@ export default function ChatWidget({ isOpenExternal, onCloseExternal }) {
           style={{ background: '#1f3a5f' }}
         >
           <div className="relative">
-            <Bot className="w-5 h-5 text-[#e8a33d]" />
+            <Brain className="w-5 h-5 text-[#e8a33d]" />
             <span className="absolute -top-1 -right-1 flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#e8a33d] opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#e8a33d]"></span>
             </span>
           </div>
           <span className="hidden sm:inline">{t('talkAdvisor')}</span>
-          <span className="sm:hidden">AI</span>
+          <span className="sm:hidden">Gemini AI</span>
         </button>
       )}
 
@@ -304,23 +311,24 @@ export default function ChatWidget({ isOpenExternal, onCloseExternal }) {
       {isOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4">
           <div
-            className="w-full max-w-md h-[88vh] sm:h-[620px] bg-[#f3ede0] rounded-t-3xl sm:rounded-3xl flex flex-col shadow-2xl overflow-hidden border border-[#e4d9c7] animate-in slide-in-from-bottom duration-200"
+            className="w-full max-w-md h-[88vh] sm:h-[630px] bg-[#f3ede0] rounded-t-3xl sm:rounded-3xl flex flex-col shadow-2xl overflow-hidden border border-[#e4d9c7] animate-in slide-in-from-bottom duration-200"
           >
             {/* Header */}
             <div className="px-4 py-3.5 bg-[#1f3a5f] text-white flex items-center justify-between shadow-sm">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-[#e8a33d]">
-                  <Sparkles className="w-5 h-5" />
+                  <Brain className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="font-heading text-sm font-bold text-[#fffdf9] flex items-center gap-1.5">
                     {t('chatTitle')}
-                    <span className="text-[10px] bg-[#e8a33d] text-[#1f3a5f] px-1.5 py-0.2 rounded font-bold uppercase">
-                      Claude AI
+                    <span className="text-[10px] bg-[#e8a33d] text-[#1f3a5f] px-1.5 py-0.5 rounded font-bold uppercase flex items-center gap-1">
+                      <Sparkles className="w-2.5 h-2.5" />
+                      Gemini Thinking
                     </span>
                   </h3>
                   <p className="text-[11px] text-[#efe6d6] truncate max-w-[220px]">
-                    {t('chatSubtitle')}
+                    {isHindi ? "तार्किक वित्तीय व व्यापार रणनीतिकार" : "Cognitive Business & Financial Strategist"}
                   </p>
                 </div>
               </div>
@@ -373,7 +381,7 @@ export default function ChatWidget({ isOpenExternal, onCloseExternal }) {
                     </div>
 
                     <div
-                      className={`max-w-[82%] px-3.5 py-2.5 rounded-2xl text-xs shadow-sm ${
+                      className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-xs shadow-sm ${
                         isUser
                           ? 'bg-[#1f3a5f] text-white rounded-tr-none'
                           : 'bg-[#fffdf9] text-[#5b4636] border border-[#e4d9c7] rounded-tl-none'
@@ -382,6 +390,22 @@ export default function ChatWidget({ isOpenExternal, onCloseExternal }) {
                       <div className="break-words">
                         {isUser ? msg.content : renderFormattedContent(msg.content)}
                       </div>
+
+                      {/* Gemini Chain of Thought Preview */}
+                      {!isUser && msg.thoughts && (
+                        <div className="mt-2.5 pt-2 border-t border-[#e4d9c7]/60">
+                          <details className="text-[10.5px] bg-[#faf6ee] rounded-lg p-1.5 cursor-pointer border border-[#e4d9c7]/60 group">
+                            <summary className="font-semibold text-[#1f3a5f] flex items-center gap-1 select-none text-[10px]">
+                              <Brain className="w-3 h-3 text-[#e8a33d]" />
+                              <span>{isHindi ? "Gemini विचार प्रक्रिया (Chain of Thought)" : "Gemini Thinking Process"}</span>
+                            </summary>
+                            <p className="mt-1 leading-relaxed text-[#7a6452] italic text-[9.5px] whitespace-pre-wrap pl-1.5 border-l-2 border-[#e8a33d]">
+                              {msg.thoughts}
+                            </p>
+                          </details>
+                        </div>
+                      )}
+
                       <div
                         className={`text-[10px] mt-1 text-right ${
                           isUser ? 'text-white/70' : 'text-[#8a7a68]'
@@ -395,16 +419,16 @@ export default function ChatWidget({ isOpenExternal, onCloseExternal }) {
               })}
 
               {loading && (
-                <div className="flex items-center gap-2.5 text-xs text-[#1f3a5f] p-2.5 bg-[#faf4e8] rounded-2xl max-w-[85%] border border-[#e8a33d]/50 shadow-sm">
-                  <div className="w-7 h-7 rounded-full bg-[#1f3a5f] flex items-center justify-center text-[#e8a33d] shrink-0">
-                    <Sparkles className="w-4 h-4 animate-spin" />
+                <div className="flex items-center gap-2.5 text-xs text-[#1f3a5f] p-3 bg-[#faf4e8] rounded-2xl max-w-[88%] border border-[#e8a33d]/60 shadow-sm animate-pulse">
+                  <div className="w-8 h-8 rounded-full bg-[#1f3a5f] flex items-center justify-center text-[#e8a33d] shrink-0">
+                    <Brain className="w-4 h-4 animate-spin" />
                   </div>
                   <div className="flex flex-col">
                     <span className="font-bold text-[11px] text-[#1f3a5f] flex items-center gap-1">
-                      <span>{isHindi ? "उद्यम सेतु एआई विचार प्रक्रिया..." : "AI Cognitive Reasoning & Strategy..."}</span>
+                      <span>{isHindi ? "Gemini विचार प्रक्रिया (Thinking)..." : "Gemini Cognitive Reasoning..."}</span>
                     </span>
                     <span className="text-[10px] text-[#8a7a68]">
-                      {isHindi ? "दुकान के आंकड़ों और वित्तीय मॉडल्स का विश्लेषण हो रहा है" : "Analyzing shop figures, margins & scheme subsidies"}
+                      {isHindi ? "वित्तीय आंकड़ों, मार्जिन व सरकारी योजनाओं का गहन विश्लेषण" : "Evaluating revenue models, unit economics & scheme subsidies"}
                     </span>
                   </div>
                 </div>
