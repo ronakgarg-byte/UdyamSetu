@@ -101,29 +101,26 @@ export default function QuestionnairePage() {
         {qStep === 0 && (
           <div>
             <VoiceRow
-              textToRead={`${t("secA")}. ${t("qBizType")} ${t("qBizWhat")}`}
-              onVoiceInput={(val) => {
-                if (!biz.type) {
-                  setBiz((prev) => ({ ...prev, type: String(val) }));
-                } else {
-                  setBiz((prev) => ({ ...prev, what: String(val) }));
-                }
-              }}
-              fieldType="text"
+              textToRead={`${t("secA")}. ${t("qBizType")}. ${t("qBizWhat")}`}
+              helperText={
+                lang === 'hi'
+                  ? "प्रत्येक इनपुट बॉक्स के माइक बटन को दबाकर बोलें"
+                  : "Tap the mic icon in any box to speak your answer"
+              }
             />
 
             <Field label={t("qBizType")}>
               <TextInput
                 value={biz.type}
                 onChange={(v) => setBiz({ ...biz, type: v })}
-                placeholder="e.g. Kirana store, tea stall, tailoring"
+                placeholder={lang === 'hi' ? "उदा. किराना दुकान, चाय की दुकान, सिलाई" : "e.g. Kirana store, tea stall, tailoring"}
               />
             </Field>
             <Field label={t("qBizWhat")}>
               <TextInput
                 value={biz.what}
                 onChange={(v) => setBiz({ ...biz, what: v })}
-                placeholder="e.g. Spices, snacks, daily essentials"
+                placeholder={lang === 'hi' ? "उदा. मसाले, नमकीन, दैनिक सामान" : "e.g. Spices, snacks, daily essentials"}
               />
             </Field>
             <Field label={t("qWorkers")} optional>
@@ -148,17 +145,12 @@ export default function QuestionnairePage() {
         {qStep === 1 && (
           <div>
             <VoiceRow
-              textToRead={`${t("secB")}. ${t("qDailySales")}`}
-              onVoiceInput={(val) => {
-                if (typeof val === 'number') {
-                  setSales((prev) => ({
-                    ...prev,
-                    dailySales: String(val),
-                    monthlyRevenue: String(val * 30),
-                  }));
-                }
-              }}
-              fieldType="number"
+              textToRead={`${t("secB")}. ${t("qDailySales")}. ${t("qMonthlyRevenue")}`}
+              helperText={
+                lang === 'hi'
+                  ? "दैनिक बिक्री या मासिक आय बोलने के लिए माइक दबाएं"
+                  : "Tap mic on any box to speak your sales numbers"
+              }
             />
 
             <Field label={t("qCustomersPerDay")} optional>
@@ -196,16 +188,12 @@ export default function QuestionnairePage() {
         {qStep === 2 && (
           <div>
             <VoiceRow
-              textToRead={`${t("secC")}. ${t("EXPENSE_FIELDS")?.[0]?.hi || "किराया, कच्चा माल और बिजली का मासिक खर्च बताएं"}`}
-              onVoiceInput={(val) => {
-                if (typeof val === 'number') {
-                  setExpenses((prev) => ({
-                    ...prev,
-                    rawMaterials: prev.rawMaterials ? prev.rawMaterials : String(val),
-                  }));
-                }
-              }}
-              fieldType="number"
+              textToRead={`${t("secC")}. ${lang === 'hi' ? "किराया, कच्चा माल, बिजली और अन्य मासिक खर्च बताएं।" : "Please enter your monthly expenses like rent, raw materials, and electricity."}`}
+              helperText={
+                lang === 'hi'
+                  ? "प्रत्येक खर्च के सामने माइक दबाकर रकम बोलें (उदा. 'पांच हजार')"
+                  : "Tap mic on any expense box to speak the amount (e.g. '5000')"
+              }
             />
 
             {EXPENSE_FIELDS.map((f) => (
@@ -255,13 +243,12 @@ export default function QuestionnairePage() {
         {qStep === 4 && (
           <div>
             <VoiceRow
-              textToRead={`${t("secE")}. ${t("qCompetitionCount")}`}
-              onVoiceInput={(val) => {
-                if (typeof val === 'number') {
-                  setCompetition((prev) => ({ ...prev, count: String(val) }));
-                }
-              }}
-              fieldType="number"
+              textToRead={`${t("secE")}. ${t("qCompetitionCount")}. ${t("qCompetitionWhere")}`}
+              helperText={
+                lang === 'hi'
+                  ? "प्रतियोगियों की संख्या या स्थान बोलने के लिए माइक दबाएं"
+                  : "Tap mic on any box to speak"
+              }
             />
 
             <Field label={t("qCompetitionCount")}>

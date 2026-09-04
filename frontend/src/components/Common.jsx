@@ -245,26 +245,108 @@ export function Field({ label, optional, children, helper }) {
   );
 }
 
-export function TextInput({ value, onChange, placeholder, type = "text", icon: Icon }) {
+export function TextInput({
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+  icon: Icon,
+  voice = true,
+  voiceFieldType,
+  onVoiceInput,
+}) {
+  const { lang } = useApp();
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+  const sttSupported = isSpeechRecognitionSupported();
+
+  const handleToggleMic = () => {
+    if (!sttSupported) return;
+    if (isListening) {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch (e) {
+          // ignore
+        }
+      }
+      setIsListening(false);
+      return;
+    }
+
+    stopSpeaking();
+    setIsListening(true);
+
+    recognitionRef.current = startListening({
+      lang,
+      onResult: (transcript) => {
+        setIsListening(false);
+        let parsed = transcript;
+
+        if (type === 'number' || voiceFieldType === 'number') {
+          const num = parseSpokenNumber(transcript);
+          parsed = num !== null && num !== undefined ? num : transcript.replace(/\D/g, '');
+        } else if (type === 'tel' || voiceFieldType === 'tel') {
+          const digits = transcript.replace(/\D/g, '');
+          parsed = digits || transcript;
+        }
+
+        if (parsed !== null && parsed !== undefined && String(parsed).trim().length > 0) {
+          onChange(String(parsed));
+          if (onVoiceInput) onVoiceInput(parsed);
+        }
+      },
+      onError: (err) => {
+        console.warn('[TextInput Voice] Error:', err);
+        setIsListening(false);
+      },
+      onEnd: () => {
+        setIsListening(false);
+      },
+    });
+  };
+
   return (
-    <div className="relative">
+    <div className="relative flex items-center">
       <input
         type={type}
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full text-sm px-3.5 py-2.5 rounded-lg border outline-none transition"
+        className={`w-full text-sm px-3.5 py-2.5 rounded-lg border outline-none transition ${
+          voice && sttSupported ? "pr-11" : Icon ? "pr-10" : ""
+        }`}
         style={{
-          background: "#fffdf9",
-          borderColor: "#e4d9c7",
+          background: isListening ? "#fff8e6" : "#fffdf9",
+          borderColor: isListening ? "#e8a33d" : "#e4d9c7",
+          boxShadow: isListening ? "0 0 0 2px rgba(232, 163, 61, 0.25)" : "none",
           color: "#1f3a5f",
         }}
       />
-      {Icon && (
-        <Icon
-          className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ color: "#8a7a68" }}
-        />
+      {voice && sttSupported ? (
+        <button
+          type="button"
+          onClick={handleToggleMic}
+          title={isListening ? "Listening... Speak now" : "Speak into this field"}
+          className={`absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 rounded-md transition-all flex items-center justify-center ${
+            isListening
+              ? "bg-red-500 text-white animate-pulse shadow-sm"
+              : "text-[#8a7a68] hover:text-[#1f3a5f] hover:bg-[#efe6d6]"
+          }`}
+        >
+          {isListening ? (
+            <MicOff className="w-4 h-4" />
+          ) : (
+            <Mic className="w-4 h-4 text-[#a36a2d]" />
+          )}
+        </button>
+      ) : (
+        Icon && (
+          <Icon
+            className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+            style={{ color: "#8a7a68" }}
+          />
+        )
       )}
     </div>
   );

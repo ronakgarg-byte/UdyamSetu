@@ -71,15 +71,18 @@ export default function UserDetailsPage() {
           </div>
         )}
 
-        {/* Section Audio Voice Row */}
+        {/* Section Audio Voice Guide */}
         <VoiceRow
-          textToRead={`${t("udTitle")}. ${t("udName")}`}
-          onVoiceInput={(val) => {
-            setError('');
-            setUser((prev) => ({ ...prev, name: String(val) }));
-          }}
-          fieldType="text"
-          currentValue={user.name}
+          textToRead={
+            lang === 'hi'
+              ? `${t("udTitle")}। कृपया अपना नाम, उम्र और लिंग बताएं। आप किसी भी बॉक्स के माइक बटन को दबाकर बोल सकते हैं।`
+              : `${t("udTitle")}. Please provide your name, age, and details. You can tap the mic icon in each box to speak.`
+          }
+          helperText={
+            lang === 'hi'
+              ? "प्रत्येक बॉक्स में माइक दबाकर अलग-अलग बोलें"
+              : "Tap the mic icon in each input box to speak"
+          }
         />
 
         {/* Name */}
@@ -100,13 +103,13 @@ export default function UserDetailsPage() {
             type="number"
             value={user.age}
             onChange={(v) => setUser({ ...user, age: v })}
-            placeholder="e.g. 35"
+            placeholder={lang === 'hi' ? "उदा. 35" : "e.g. 35"}
           />
         </Field>
 
         {/* Gender */}
         <Field label={t("udGender")} optional>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {genderOptions.map((g) => (
               <Chip
                 key={g.key}
@@ -124,7 +127,7 @@ export default function UserDetailsPage() {
             type="tel"
             value={user.phone}
             onChange={(v) => setUser({ ...user, phone: v })}
-            placeholder="10-digit mobile number"
+            placeholder={lang === 'hi' ? "10 अंकों का मोबाइल नंबर" : "10-digit mobile number"}
           />
         </Field>
       </div>
