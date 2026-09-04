@@ -1,7 +1,7 @@
 const axios = require('axios');
 const { pool, inMemoryStore, isPostgres } = require('../config/db');
 const { calculateFinancialMetrics } = require('./financialService');
-const { matchSchemes } = require('./schemeMatchingService');
+const { matchSchemes, SCHEMES_MASTER } = require('./schemeMatchingService');
 const { getAggregatedLocalContext } = require('./externalData/localContextAggregator');
 
 async function getUserFullContext(userId, clientContext = {}) {
@@ -62,7 +62,7 @@ async function getUserFullContext(userId, clientContext = {}) {
   }
 
   const financial = calculateFinancialMetrics(sales, expenses, items, problems);
-  const localContext = await getAggregatedLocalContext(user.district || 'Varanasi');
+  const localContext = await getAggregatedLocalContext(user.district || business.district || 'Varanasi');
   const schemes = matchSchemes(user, business, financial, problems, localContext);
 
   return {
@@ -87,71 +87,78 @@ function buildSystemPrompt(context, lang = 'en') {
   const expenseRatio = financial.revenue > 0 ? ((financial.totalExpenses / financial.revenue) * 100).toFixed(1) : '0';
   const dailyTargetBreakEven = Math.round((financial.totalExpenses || 0) / 26);
 
+  // Build full detailed scheme profiles for Gemini
+  const schemeDirectoryText = (schemes || SCHEMES_MASTER).map((s, idx) => {
+    return `[${idx + 1}] ${s.name_en} (${s.name_hi || ''})
+- Match Score: ${s.matchPercentage || 80}%
+- Ministry: ${s.ministry_en || 'Govt of India'}
+- Max Loan Ceiling: Up to ₹${(s.loanCeiling || 50000).toLocaleString('en-IN')}
+- Government Subsidy: ${s.interestSubsidyPct > 0 ? `${s.interestSubsidyPct}% (Capital/Interest Subsidy)` : 'Collateral-free low banking interest'}
+- Key Highlights: ${(s.keyBenefits_en || []).join('; ') || s.description_en}
+- Official Portal: ${s.portalUrl}`;
+  }).join('\n\n');
+
   return `You are "Udyam Setu AI Business Strategist & Financial Advisor" (उद्यम सेतु मुख्य वित्तीय व व्यापार रणनीतिकार), powered by Google Gemini Thinking & Cognitive Reasoning Engine.
-Your mission is to provide deep, analytical, mathematically grounded, yet simple and empowering business consulting to micro-entrepreneurs across India (Ministry of Social Justice & Empowerment, Problem SIH26091).
+Your mission is to provide deep, analytical, mathematically grounded, yet simple and empowering business consulting and government scheme guidance to micro-entrepreneurs across India (under Ministry of Social Justice & Empowerment, Problem SIH26091).
 
 =======================================================
-🧠 GEMINI COGNITIVE THINKING & REASONING PROTOCOL:
+🧠 GEMINI COGNITIVE REASONING & ADVISORY PROTOCOL:
 =======================================================
-Before formulating any advice, you MUST reason through these 4 cognitive dimensions:
+When answering the entrepreneur, follow these core principles:
 
-1. **FINANCIAL RATIOS & HEALTH DIAGNOSIS**:
-   - Monthly Revenue: ₹${financial.revenue || 0} | Operating Expenses: ₹${financial.totalExpenses || 0}
-   - Net Profit: ₹${financial.netProfit || 0} (${marginPct}% Net Margin) | Expense Drain Ratio: ${expenseRatio}%
-   - Identify cost leakages: Raw Materials (₹${expenses.raw_materials ?? expenses.rawMaterials ?? 0}), Rent (₹${expenses.rent || 0}), Transport (₹${expenses.transport || 0}), Loan EMI (₹${financial.emi || 0}).
+1. **NO REPETITIVE OR VAGUE ANSWERS**:
+   - Never output generic copy-paste text.
+   - Always reference the entrepreneur's exact business type, daily sales (₹${sales.daily_sales ?? sales.dailySales ?? 0}), net profit (₹${financial.netProfit}), and expenses.
 
-2. **ROOT-CAUSE BOTTLENECK ISOLATION**:
-   - Registered Challenges: ${problems.join(', ') || 'General growth'}.
-   - Competitive Dynamics: ${competition.count || 0} competitors in ${competition.where || 'locality'}.
-   - Customer Base: ${customers.join(', ') || 'Local community'}.
+2. **DIVERSE & TAILORED GOVERNMENT SCHEMES**:
+   - Compare and recommend the BEST matching schemes from the scheme directory below.
+   - If they are a **Tailor, Artisan, Carpenter, Barber, Potter, or Handloom worker**: Highlight **PM Vishwakarma Scheme** (₹15,000 free toolkit + up to ₹3 Lakh loan at 5% fixed concessional interest).
+   - If they are a **Woman entrepreneur or SC/ST**: Highlight **Stand-Up India** (₹10 Lakh to ₹1 Crore) and **PMEGP** (up to 35% margin subsidy).
+   - If they are a **Street vendor or small micro-shop** (<₹30,000 monthly revenue): Highlight **PM-SVANidhi** (₹10k -> ₹20k -> ₹50k collateral-free with 7% interest subsidy & UPI cashback).
+   - If they need **machinery, inventory bulk purchase, or shop expansion** (₹50k to ₹5 Lakhs): Highlight **Pradhan Mantri MUDRA Yojana (Kishore)**.
+   - If they are setting up a **rural or manufacturing unit**: Highlight **PMEGP** (25-35% government capital grant).
+   - Always state: Loan Amount, Subsidy/Interest %, Required Documents (Aadhaar, Bank Passbook, Udyam No.), and Application Steps.
 
-3. **LOGICAL MATHEMATICAL PROJECTIONS**:
-   - Avoid generic platitudes. Always calculate concrete return-on-investment (ROI) numbers.
-   - Example: Show how shifting sales from ₹${sales.daily_sales ?? sales.dailySales ?? 0}/day to ₹${Math.round((sales.daily_sales ?? sales.dailySales ?? 800) * 1.2)}/day expands monthly profit by ₹${Math.round((financial.netProfit || 5000) * 0.35)}.
-   - Calculate exact government scheme loan benefits and interest subsidies.
-
-4. **PHASED ACTIONABLE ROADMAP**:
-   - Phase 1 (Immediate 48 Hours): Quick cash flow and display improvements.
-   - Phase 2 (2-4 Weeks): Wholesale APMC procurement & credit management.
-   - Phase 3 (Government Scheme): Exact application pathway for ${schemes[0]?.name_en || 'PM-SVANidhi'}.
+3. **CONCRETE MATHEMATICAL CALCULATIONS**:
+   - Show how a 15-20% uplift in daily sales drops directly to their take-home profit.
+   - Show how buying from wholesale APMC Mandis cuts raw material cost by 4-7%.
 
 =======================================================
-📊 LIVE ENTREPRENEUR PROFILE & CONTEXT:
+📊 LIVE ENTREPRENEUR PROFILE & NUMBERS:
 =======================================================
 - Name: ${user.name || 'Entrepreneur'} (Age: ${user.age || 'N/A'}, Gender: ${user.gender || 'N/A'})
-- Location: ${user.district || 'Varanasi'}, ${user.state || 'Uttar Pradesh'}
-- Preferred Language: ${isHindi ? 'Hindi (हिन्दी)' : 'English'}
+- Location: ${user.district || business.district || 'Varanasi'}, ${user.state || business.state || 'Uttar Pradesh'}
 - Business Type: ${business.type || 'Micro-Enterprise'} (Selling: ${business.what || 'Essentials'}, Workers: ${business.workers || 0}, Hours: ${business.hours || 'Standard'})
 - Daily Sales: ₹${sales.daily_sales ?? sales.dailySales ?? 0} (Monthly Revenue: ₹${financial.revenue || 0})
-- Total Monthly Expenses: ₹${financial.totalExpenses}
-  * Rent: ₹${expenses.rent || 0}
-  * Raw Materials/Inventory: ₹${expenses.raw_materials ?? expenses.rawMaterials ?? 0}
+- Operating Expenses: ₹${financial.totalExpenses}/month
+  * Raw Materials/Stock: ₹${expenses.raw_materials ?? expenses.rawMaterials ?? 0}
+  * Shop Rent: ₹${expenses.rent || 0}
   * Transport: ₹${expenses.transport || 0}
   * Wages: ₹${expenses.wages || 0}
   * Electricity: ₹${expenses.electricity || 0}
   * Loan Repayment / EMI: ₹${financial.emi || 0}
-  * Other: ₹${expenses.other || 0}
-- Financial Diagnostic Metrics:
-  * Net Monthly Profit: ₹${financial.netProfit} (${marginPct}% Net Margin)
-  * Cash Flow in Hand: ₹${financial.cashFlow}
-  * Daily Break-Even Sales Target: ₹${dailyTargetBreakEven} per day
-  * Working Capital Locked in Stock: ₹${financial.workingCapital}
-  * Debt Risk Level: ${financial.riskLevel.toUpperCase()}
-- Listed Items: ${items.map((it) => `${it.desc || it.description} (Sell: ₹${it.sell_price ?? it.sellPrice}, Cost: ₹${it.cost_price ?? it.costPrice})`).join('; ') || 'General essentials'}
-- Target Customers: ${customers.join(', ') || 'Local neighborhood'}
-- Competition: ${competition.count || 0} competitors in ${competition.where || 'same area'}
-- Best Matched Government Schemes:
-${schemes.slice(0, 3).map((s, idx) => `  ${idx + 1}. ${s.name_en} (${s.matchPercentage}% match) -> Loan: Up to ₹${s.loanCeiling}, Subsidy: ${s.interestSubsidyPct}%, Portal: ${s.portalUrl}`).join('\n')}
-- Local GIS & Mandi Economics: ${localContext?.district || 'Varanasi'} Mandi Sentiment: ${localContext?.mandiEconomics?.sentiment || 'Steady'}.
+- Financial Ratios:
+  * Net Monthly Profit: ₹${financial.netProfit} (${marginPct}% Margin)
+  * Daily Break-Even Target: ₹${dailyTargetBreakEven}/day
+  * Debt Risk: ${financial.riskLevel.toUpperCase()}
+- Reported Challenges: ${problems.join(', ') || 'General business growth'}
+- Target Customers: ${customers.join(', ') || 'Local community'}
+- Competition: ${competition.count || 0} rivals in ${competition.where || 'locality'}
 
 =======================================================
-🎯 RESPONSE RULES & FORMAT:
+🏛️ MATCHED GOVERNMENT SCHEMES DIRECTORY:
+=======================================================
+${schemeDirectoryText}
+
+=======================================================
+🎯 RESPONSE GUIDELINES:
 =======================================================
 1. Language: ${isHindi ? 'Fluent, conversational Hindi in Devanagari script (सरल, स्पष्ट और सम्मानजनक हिन्दी)' : 'Clear, structured, highly analytical English'}.
-2. Always structure your response logically:
-   - 🔍 **स्थिति विश्लेषण (Diagnostic Assessment)**: Brief 1-2 sentence logical breakdown of their current metric.
-   - 💡 **ठोस रणनीतिक कदम (Step-by-Step Strategic Roadmap)**: 3-4 bullet points with specific math and tactics.
-   - 🏛️ **सरकारी सहायता व अगला कदम (Recommended Scheme & Application Plan)**: Specific scheme recommendation with exact application instructions.`;
+2. Response Structure:
+   - 🔍 **स्थिति विश्लेषण (Quick Diagnostic)**: 1-2 lines on their specific numbers.
+   - 💡 **ठोस रणनीतिक कदम (Strategic Action Plan)**: Actionable tactics with math.
+   - 🏛️ **सर्वोत्तम सरकारी योजनाएं (Top Matched Government Schemes)**: Detailed scheme recommendations with loan limits, subsidies, and exact application roadmap.
+   - 📋 **आवश्यक दस्तावेज व आवेदन (Checklist & Application)**: Aadhaar, Bank Passbook, Udyam Aadhaar, and portal link.`;
 }
 
 function generateOfflineFallbackResponse(message, context, lang = 'en') {
@@ -161,83 +168,86 @@ function generateOfflineFallbackResponse(message, context, lang = 'en') {
   const userName = user?.name ? `${user.name} जी` : (isHindi ? 'उद्यमी साथी' : 'Entrepreneur');
   const userEnName = user?.name || 'Entrepreneur';
   const bizType = business?.type || (isHindi ? 'दुकान/व्यवसाय' : 'business');
+  const bizWhat = (business?.what || '').toLowerCase();
+  const userGender = (user?.gender || '').toLowerCase();
   const revenue = financial.revenue || 0;
   const totalExp = financial.totalExpenses || 0;
   const netProfit = financial.netProfit || 0;
   const marginPct = revenue > 0 ? ((netProfit / revenue) * 100).toFixed(1) : '0';
-  const dailyTarget = Math.round(totalExp / 26);
-  const topScheme = schemes[0] || {
-    name_en: 'PM-SVANidhi',
-    name_hi: 'पीएम स्वनिधि',
-    matchPercentage: 88,
-    loanCeiling: 50000,
-    portalUrl: 'https://pmsvanidhi.mohua.gov.in/',
-  };
+  const rawCost = expenses.raw_materials ?? expenses.rawMaterials ?? 0;
 
-  // 1. GREETINGS
+  // Pick top tailored schemes
+  const isArtisan = /tailor|sew|cloth|boutique|carpenter|wood|iron|smith|potter|basket|weave|barber|artisan/i.test(bizWhat) || /tailor|boutique/i.test(bizType);
+  const isFemale = userGender === 'female' || userGender === 'woman';
+
+  // 1. SCHEMES & LOANS QUERY
+  if (/scheme|yojana|योजना|loan|लोन|ऋण|subsidy|svanidhi|mudra|pmegp|vishwakarma|standup|cgtmse|eligible|पात्र|apply|bank|paisa/i.test(query)) {
+    if (isHindi) {
+      let schemeRecommendations = '';
+
+      if (isArtisan) {
+        schemeRecommendations = `🏛️ **1. पीएम विश्वकर्मा योजना (PM Vishwakarma) - 95% सर्वश्रेष्ठ मैच:**
+- **किसके लिए:** सिलाई (Tailoring), कारीगर, दस्तकार और पारंपरिक हुनरमंदों के लिए।
+- **ऋण राशि:** ₹3,00,000 (प्रथम चरण में ₹1 लाख, द्वितीय चरण में ₹2 लाख) मात्र **5% रियायती ब्याज दर** पर।
+- **अतिरिक्त लाभ:** ₹15,000 का मुफ्त आधुनिक टूलकिट वाउचर + ₹500/दिन वजीफा और आधिकारिक विश्वकर्मा प्रमाणपत्र।
+- **आवेदन:** नजदीकी CSC जन सेवा केंद्र या [pmvishwakarma.gov.in](https://pmvishwakarma.gov.in/) पर आधार व पासबुक से आवेदन करें।
+
+🏛️ **2. पीएम मुद्रा योजना - किशोर (MUDRA Kishore):**
+- **ऋण राशि:** ₹50,000 से ₹5,00,000 बिना किसी संपत्ति गारंटी के नई सिलाई मशीनों व कपड़े के थोक स्टॉक के लिए।`;
+      } else if (isFemale) {
+        schemeRecommendations = `🏛️ **1. स्टैंड-अप इंडिया योजना (Stand-Up India) - महिला विशेष:**
+- **ऋण राशि:** ₹10 लाख से ₹1 करोड़ तक नया विनिर्माण या सेवा उद्यम शुरू/विस्तार करने के लिए।
+- **विशेषता:** सिडबी (SIDBI) द्वारा विशेष मार्गदर्शन, 7 वर्ष की पुनर्भुगतान अवधि और 18 महीने की छूट (Moratorium)।
+- **आवेदन:** [standupmitra.in](https://www.standupmitra.in/) या किसी भी सरकारी बैंक शाखा में।
+
+🏛️ **2. पीएमईजीपी (PMEGP) - 35% भारी सरकारी सब्सिडी:**
+- **सब्सिडी:** महिला उद्यमियों को ग्रामीण क्षेत्र में कुल प्रोजेक्ट लागत पर **35% सीधी सरकारी सब्सिडी** (माफ) मिलती है।
+- **ऋण सीमा:** सेवा क्षेत्र में ₹20 लाख तक, विनिर्माण में ₹50 लाख तक।`;
+      } else if (revenue < 25000) {
+        schemeRecommendations = `🏛️ **1. पीएम स्वनिधि (PM-SVANidhi) - 88% मैच:**
+- **ऋण राशि:** ₹50,000 तक कोलैटरल-फ्री (पहले चरण में ₹10,000, समय पर चुकाने पर ₹20,000 और फिर ₹50,000)।
+- **ब्याज सब्सिडी:** 7% वार्षिक ब्याज सब्सिडी सीधे बैंक खाते में + डिजिटल लेनदेन पर ₹1,200/वर्ष कैशबैक।
+- **दस्तावेज:** केवल आधार कार्ड, बैंक खाता पासबुक और वेंडर पहचान पत्र।
+
+🏛️ **2. पीएम मुद्रा योजना - शिशु (MUDRA Shishu):**
+- **ऋण राशि:** ₹50,000 तक तुरंत कार्यशील पूंजी।`;
+      } else {
+        schemeRecommendations = `🏛️ **1. पीएम मुद्रा योजना - किशोर (MUDRA Kishore):**
+- **ऋण राशि:** ₹50,000 से ₹5,00,000 बिना किसी संपत्ति या गारंटर के।
+- **उपयोग:** नई इन्वेंट्री, दुकान का विस्तार या उपकरण खरीद के लिए।
+
+🏛️ **2. पीएमईजीपी (PMEGP) - 25-35% सरकारी सब्सिडी:**
+- **सब्सिडी:** परियोजना लागत का 25% (शहरी) से 35% (ग्रामीण) हिस्सा सरकार द्वारा माफ।
+- **आवेदन:** [kviconline.gov.in](https://www.kviconline.gov.in/pmegpeportal/)`;
+      }
+
+      return `नमस्ते ${userName}! आपके **${bizType}** (मासिक आय: ₹${revenue.toLocaleString('en-IN')}) के लिए **सर्वोत्तम सरकारी ऋण व सब्सिडी योजनाएं**:\n\n${schemeRecommendations}\n\n📋 **आवेदन हेतु आवश्यक दस्तावेज:**\n1. आधार कार्ड और पैन कार्ड\n2. बैंक खाता पासबुक (पिछले 6 महीने का विवरण)\n3. दुकान का फोटो और बिजली बिल/किरायानामा\n4. उद्यम आधार (Udyam Registration - निःशुल्क ऑनलाइन बनता है)`;
+    }
+
+    return `Hello ${userEnName}! Based on your **${bizType}** (Monthly Revenue: ₹${revenue.toLocaleString('en-IN')}), here are your **Top Matched Government Schemes**:\n\n🏛️ **1. ${isArtisan ? 'PM Vishwakarma Scheme (Artisan & Tailor Special)' : isFemale ? 'Stand-Up India / PMEGP (Women Special)' : 'PM-SVANidhi / MUDRA Yojana'}**:\n- **Loan Ceiling:** Up to ₹${isArtisan ? '3,00,000 @ 5% fixed interest + ₹15,000 toolkit' : isFemale ? '10 Lakh to ₹1 Crore with 35% capital subsidy' : '50,000 to ₹5,00,000 collateral-free'}.\n- **Subsidies:** Up to 35% capital grant on PMEGP / 7% interest subvention on SVANidhi.\n- **Eligibility:** Verified for micro-enterprises with minimal KYC.\n- **How to apply:** Visit your nearest Common Service Centre (CSC) or apply on the JanSamarth national credit portal.`;
+  }
+
+  // 2. GREETINGS
   if (/^(hi|hello|hey|namaste|namaskar|pranam|नमस्ते|प्रणाम|हेलो|हाय|kya haal|kaise ho)/i.test(query) || query === 'hi' || query === 'hello') {
     if (isHindi) {
-      return `नमस्ते ${userName}! 🙏\n\nमैं आपका **उद्यम सेतु एआई व्यापार रणनीतिकार** (Gemini Thinking Engine) हूँ। मैंने आपके **${bizType}** के सभी आंकड़ों का गहन विश्लेषण किया है:\n\n📊 **आपकी दुकान का लाइव वित्तीय रिपोर्ट कार्ड:**\n- **मासिक बिक्री:** ₹${revenue.toLocaleString('en-IN')}\n- **मासिक परिचालन खर्च:** ₹${totalExp.toLocaleString('en-IN')}\n- **शुद्ध मुनाफा:** ₹${netProfit.toLocaleString('en-IN')} (शुद्ध मार्जिन: **${marginPct}%**)\n- **दैनिक ब्रेक-ईवन लक्ष्य:** ₹${dailyTarget.toLocaleString('en-IN')} / दिन\n- **सर्वश्रेष्ठ योजना:** **${topScheme.name_hi || topScheme.name_en}** (${topScheme.matchPercentage}% पात्रता)\n\nमुझसे कोई भी प्रश्न पूछें:\n1. 📈 *"बिक्री और मुनाफा 30% कैसे बढ़ाएं?"*\n2. 🏛️ *"पीएम स्वनिधि / मुद्रा लोन के लिए आवेदन कैसे करें?"*\n3. 💡 *"कच्चे माल का खर्च घटाने की रणनीति?"*\n4. 📱 *"उधार के पैसे की तेजी से वसूली कैसे करें?"*`;
+      return `नमस्ते ${userName}! 🙏\n\nमैं आपका **उद्यम सेतु एआई व्यापार सलाहकार** हूँ। मैंने आपके **${bizType}** के आंकड़ों का विश्लेषण किया है:\n\n📊 **आपकी दुकान का वित्तीय रिपोर्ट कार्ड:**\n- **मासिक बिक्री:** ₹${revenue.toLocaleString('en-IN')}\n- **मासिक खर्च:** ₹${totalExp.toLocaleString('en-IN')}\n- **शुद्ध मुनाफा:** ₹${netProfit.toLocaleString('en-IN')} (शुद्ध मार्जिन: **${marginPct}%**)\n\nमुझसे कोई भी प्रश्न पूछें:\n1. 🏛️ *"मेरे लिए सबसे अच्छी सरकारी लोन और सब्सिडी योजना कौन सी है?"*\n2. 📈 *"बिक्री और मुनाफा 30% कैसे बढ़ाएं?"*\n3. 💡 *"कच्चे माल का खर्च घटाने की रणनीति?"*\n4. 📱 *"उधार का पैसा तेजी से कैसे निकालें?"*`;
     }
-    return `Hello ${userEnName}! 👋\n\nI am your **Udyam Setu AI Business Strategist** (powered by Gemini Thinking Engine). Here is the logical diagnostic snapshot of your **${bizType}**:\n\n📊 **Financial Health Snapshot:**\n- **Monthly Revenue:** ₹${revenue.toLocaleString('en-IN')}\n- **Monthly Operating Expenses:** ₹${totalExp.toLocaleString('en-IN')}\n- **Net Monthly Profit:** ₹${netProfit.toLocaleString('en-IN')} (${marginPct}% Net Margin)\n- **Daily Break-Even Target:** ₹${dailyTarget.toLocaleString('en-IN')}/day\n- **Top Matched Scheme:** **${topScheme.name_en}** (${topScheme.matchPercentage}% eligibility)\n\nAsk me anything:\n1. 📈 *"How to increase sales and profit by 30%?"*\n2. 🏛️ *"How to apply for government working capital loans?"*\n3. 💰 *"How to cut inventory & wholesale procurement costs?"*`;
+    return `Hello ${userEnName}! 👋\n\nI am your **Udyam Setu AI Business Strategist**. Financial snapshot for your **${bizType}**:\n- **Monthly Revenue:** ₹${revenue.toLocaleString('en-IN')}\n- **Total Expenses:** ₹${totalExp.toLocaleString('en-IN')}\n- **Net Profit:** ₹${netProfit.toLocaleString('en-IN')} (${marginPct}% Net Margin)\n\nAsk me about government loans, subsidies, cost cutting, or sales growth!`;
   }
 
-  // 2. BUSINESS GROWTH / EXPANSION ("Mei business ko badhau kaise")
-  if (
-    /badhau|badhana|badhaye|grow|growth|expand|bada karna|bada kare|tarakki|scale|aage badhe|bikri badhana|bikri kaise|sell more|galla/i.test(query)
-  ) {
+  // 3. BUSINESS GROWTH
+  if (/badhau|badhana|badhaye|grow|growth|expand|bada karna|bada kare|tarakki|scale|aage badhe|bikri badhana|bikri kaise|sell more|galla/i.test(query)) {
     if (isHindi) {
-      return `नमस्ते ${userName}! आपके **${bizType}** (वर्तमान बिक्री: ₹${revenue.toLocaleString('en-IN')}/माह, शुद्ध मुनाफा: ₹${netProfit.toLocaleString('en-IN')}) के लिए **तार्किक विकास रणनीति**:\n\n🔍 **स्थिति विश्लेषण**: आपकी वर्तमान दैनिक बिक्री ₹${(sales.daily_sales ?? sales.dailySales ?? 0).toLocaleString('en-IN')} है। यदि दैनिक बिक्री ₹400-500 बढ़ जाए, तो निश्चित खर्च (किराया, बिजली) वही रहते हुए आपका मासिक मुनाफा सीधे ₹4,000–₹5,000 बढ़ जाएगा।\n\n💡 **ठोस रणनीतिक कदम**:\n1. 🏷️ **25-35% उच्च-मार्जिन उत्पाद मिश्रण:**\n   - बुनियादी कम-मार्जिन सामान के साथ काउंटर के आगे स्नैक्स, पैकेज्ड मसाले और फास्ट-मूविंग वस्तुएं रखें।\n2. 📱 **डिजिटल UPI QR कोड + छुट्टे का झंझट खत्म:**\n   - काउंटर पर GooglePay/PhonePe QR लगाएं। इससे छुट्टे पैसे न होने के कारण लौटने वाले 5-10% ग्राहक बचेंगे।\n3. 🛒 **APMC थोक मंडी से सीधी खरीद:**\n   - कच्चे माल खर्च (₹${(expenses.raw_materials ?? expenses.rawMaterials ?? 0).toLocaleString('en-IN')}) में से बिचौलियों को हटाकर मुख्य मंडी से नकद में माल उठाएं (4-6% सीधी बचत)।\n\n🏛️ **सरकारी सहायता**: **${topScheme.name_hi || topScheme.name_en}** से ₹${(topScheme.loanCeiling || 50000).toLocaleString('en-IN')} का ब्याज-सब्सिडी वाला लोन लें और नई वैरायटी का स्टॉक भरें।`;
+      return `नमस्ते ${userName}! आपके **${bizType}** (दैनिक बिक्री: ₹${(sales.daily_sales ?? sales.dailySales ?? 800).toLocaleString('en-IN')}) के लिए **4-चरणीय विकास रोडमैप**:\n\n1. 🏷️ **25-35% उच्च-मार्जिन उत्पाद मिश्रण:**\n   - बुनियादी कम-मार्जिन सामान के साथ काउंटर के सामने फास्ट-मूविंग स्नैक्स व पैकेज्ड मसाले रखें।\n2. 📱 **डिजिटल UPI QR कोड:**\n   - काउंटर पर GooglePay/PhonePe QR कोड लगाएं ताकि छुट्टे पैसे के अभाव में कोई ग्राहक न लौटे।\n3. 🛒 **APMC थोक मंडी से सीधी खरीद:**\n   - कच्चे माल के मासिक खर्च (₹${rawCost.toLocaleString('en-IN')}) में से बिचौलियों को हटाकर मुख्य मंडी से नकद खरीद करें (4-6% बचत)।\n4. 🏛️ **सरकारी कार्यशील पूंजी का उपयोग:**\n   - रियायती ब्याज वाले सरकारी ऋण से नई वैरायटी का स्टॉक जोड़ें।`;
     }
-    return `Logical growth roadmap for your **${bizType}** (Current Revenue: ₹${revenue.toLocaleString('en-IN')}, Net Margin: ${marginPct}%):\n\n🔍 **Diagnostic Assessment**: Your daily sales stand at ₹${(sales.daily_sales ?? sales.dailySales ?? 0).toLocaleString('en-IN')}. Since fixed costs (rent, power) are already covered, increasing daily sales by 20% drops directly to your bottom line, generating ~₹4,500 extra net monthly profit.\n\n💡 **Strategic Action Steps**:\n1. 🏷️ **High-Margin Merchandising (25-35% Margin)**: Prioritize impulse-buy FMCG snacks and packaged staples at eye level.\n2. 📱 **Universal UPI QR Footprint**: Display visible QR codes to eliminate coin friction and build digital bank creditworthiness.\n3. 🛒 **Direct APMC Wholesale Procurement**: Reduce raw material outlays (currently ₹${(expenses.raw_materials ?? expenses.rawMaterials ?? 0).toLocaleString('en-IN')}) by sourcing directly from primary mandis.\n\n🏛️ **Scheme Leverage**: Apply for **${topScheme.name_en}** to unlock up to ₹${(topScheme.loanCeiling || 50000).toLocaleString('en-IN')} working capital with 7% interest subsidy.`;
+    return `4-step growth plan for your **${bizType}**:\n1. 🏷️ Prioritize 25-35% high-margin products.\n2. 📱 Deploy visible UPI QR codes to eliminate payment friction.\n3. 🛒 Buy direct from wholesale APMC mandis to save 4-6%.\n4. 🏛️ Leverage low-interest government working capital loans.`;
   }
 
-  // 3. CUSTOMERS & FOOTFALL ("Grahak kaise laye", "footfall", "bikri kam")
-  if (/grahak|customer|footfall|log nahi|bikri kam|traffic|bheed/i.test(query)) {
-    if (isHindi) {
-      return `दुकान पर ग्राहकों की संख्या और दैनिक बिक्री बढ़ाने की 4 तार्किक रणनीतियां:\n\n1. 🏪 **काउंटर विजिबिलिटी (Front Display):** सबसे ज्यादा बिकने वाले और आकर्षक सामान को प्रवेश द्वार पर रखें ताकि सड़क से आने-जाने वाले ग्राहकों का ध्यान तुरंत आकर्षित हो।\n2. ⏱️ **पीक ऑवर्स में 100% स्टॉक उपलब्धता:** सुबह 7:30–10:30 और शाम 5:30–9:30 बजे के मुख्य खरीद समय में दुकान में कभी माल खत्म न होने दें।\n3. 📲 **हाइपरलोकल व्हाट्सएप ब्रॉडकास्ट (500m दायरा):** आस-पास के 50 नियमित ग्राहकों का व्हाट्सएप ग्रुप बनाएं जहां वे घर बैठे ऑर्डर भेज सकें।\n4. 🤝 **लॉयल्टी रिवॉर्ड (Loyalty Incentive):** ₹500 से अधिक की खरीदारी पर ₹15-20 की तत्काल छूट या छोटा उपयोगी सामान दें।`;
-    }
-    return `4 targeted tactics to boost customer footfall for your **${bizType}**:\n\n1. 🏪 **Front Counter Merchandising:** Place high-demand visual goods at eye level near the entrance.\n2. ⏱️ **Peak-Hour Stock Readiness:** Ensure zero stock-outs during the 7:30–10:30 AM and 5:30–9:30 PM peak retail windows.\n3. 📲 **Hyperlocal WhatsApp Delivery (500m):** Enable nearby households to send shopping lists via WhatsApp for curbside pickup.\n4. 🤝 **Repeat Customer Loyalty:** Offer a modest instant reward (e.g. 3% off on bills over ₹500) to incentivize regular weekly visits.`;
-  }
-
-  // 4. UDHAAR / CREDIT MANAGEMENT & RECOVERY
-  if (/udhar|udhari|credit|khata|bahi|paisa fas|recovery/i.test(query)) {
-    if (isHindi) {
-      return `उधार का पैसा निकालने और भविष्य में नकदी चक्र (Cash Flow) को सुरक्षित रखने की 3 ठोस रणनीतियां:\n\n1. 🛑 **सख्त क्रेडिट सीमा (Hard Credit Cap):** किसी भी ग्राहक को उसकी पिछली बकाया राशि चुकता होने तक ₹500 से अधिक का नया उधार कतई न दें।\n2. 💸 **नकद/UPI पर तत्काल छूट:** ग्राहकों को प्रेरित करें: *"तुरंत UPI या नकद देने पर ₹5 की सीधी छूट"*, जिससे 70% ग्राहक तुरंत भुगतान करेंगे।\n3. 📲 **महीने की 1-5 तारीख को डिजिटल बिल सारांश:** वेतन के दिनों में ग्राहकों को व्हाट्सएप पर सम्मानपूर्वक बकाया राशि का विवरण भेजें।`;
-    }
-    return `3 rules to recover pending credit & protect your cash flow:\n\n1. 🛑 **Hard Credit Ceiling:** Set a strict ₹500–₹1,000 cap per customer with a rule that no new credit is issued until previous balances are cleared.\n2. 💸 **Instant Cash/UPI Discount:** Offer a 1–2% instant billing discount for immediate payments to encourage prompt settlement.\n3. 📲 **Scheduled Month-Start Reminders:** Send polite WhatsApp account summaries between the 1st and 5th of every month when salaries are credited.`;
-  }
-
-  // 5. GOVERNMENT SCHEMES & LOANS
-  if (/scheme|yojana|योजना|loan|लोन|ऋण|subsidy|svanidhi|mudra|pmegp|vishwakarma|eligible|पात्र|apply|bank/i.test(query)) {
-    if (isHindi) {
-      return `नमस्ते ${userName}! आपके व्यवसाय के लिए **सर्वश्रेष्ठ सरकारी वित्तीय योजनाएं**:\n\n🏛️ **1. ${topScheme.name_hi || topScheme.name_en} (${topScheme.matchPercentage}% पात्रता मैच)**:\n- **ऋण राशि:** ₹${(topScheme.loanCeiling || 50000).toLocaleString('en-IN')} (प्रथम चरण: ₹10,000, द्वितीय चरण: ₹20,000, तृतीय चरण: ₹50,000)\n- **ब्याज सब्सिडी:** 7% वार्षिक ब्याज सब्सिडी सीधे बैंक खाते में।\n- **गारंटी:** शून्य (कोलैटरल-फ्री)।\n- **आवश्यक दस्तावेज:** आधार कार्ड, बैंक खाता पासबुक और दुकान पहचान पत्र।\n- **आवेदन प्रक्रिया:** नजदीकी CSC जन सेवा केंद्र या [आधिकारिक पोर्टल](${topScheme.portalUrl}) पर जाएं।\n\n🏛️ **2. पीएम मुद्रा योजना (शिशु/किशोर):** ₹50,000 से ₹5 लाख तक का उपकरण व स्टॉक ऋण।`;
-    }
-    return `Based on your profile, here are your top matched **Government Financial Schemes**:\n\n🏛️ **1. ${topScheme.name_en} (${topScheme.matchPercentage}% Match)**:\n- **Loan Ceiling:** Up to ₹${(topScheme.loanCeiling || 50000).toLocaleString('en-IN')} (Collateral-free working capital in progressive tranches of ₹10k, ₹20k, and ₹50k).\n- **Interest Subsidy:** 7% annual interest subsidy directly credited to your savings bank account.\n- **Required KYC:** Aadhaar card, bank passbook, and basic vendor/shop proof.\n- **Application Method:** Visit any local public sector bank branch or Common Service Centre (CSC).\n\n🏛️ **2. Pradhan Mantri MUDRA Yojana (Shishu/Kishore):** For expanding business assets and equipment up to ₹5,00,000.`;
-  }
-
-  // 6. EXPENSES & COST CUTTING
-  if (/expense|kharch|खर्च|cost|लागत|reduce|kam|bachat|save|rent|kiraya|wholesale|kaccha maal|mandi/i.test(query)) {
-    if (isHindi) {
-      return `आपके व्यवसाय का कुल मासिक खर्च **₹${totalExp.toLocaleString('en-IN')}** है।\n\nखर्च में 15% की कमी लाने के 3 प्रमुख उपाय:\n\n1. 🛒 **थोक APMC मंडी से सीधी साझेदारी:**\n   - कच्चे माल का वर्तमान खर्च ₹${(expenses.raw_materials ?? expenses.rawMaterials ?? 0).toLocaleString('en-IN')} है। स्थानीय बिचौलियों के बजाय सीधे मुख्य मंडी से नकद में माल लेने पर 4-7% की बचत होगी।\n2. 🚚 **लॉजिस्टिक्स और परिवहन का पुनर्गठन:**\n   - दैनिक परिवहन खर्च (₹${(expenses.transport || 0).toLocaleString('en-IN')}) को कम करने के लिए हफ्ते में सिर्फ 1-2 बार बड़ा स्टॉक लाएं।\n3. 📦 **इन्वेंट्री डैमेज व लीकेज रोकथाम:**\n   - खराब होने वाली वस्तुओं को ठंडी, सूखी जगह पर रखें और 'पहले आया, पहले बिका' (FIFO) नियम का पालन करें।`;
-    }
-    return `Your total monthly business expenses stand at **₹${totalExp.toLocaleString('en-IN')}**.\n\n3 high-impact cost reduction measures:\n\n1. 🛒 **Direct APMC Wholesale Procurement:**\n   - Your current raw material expense is ₹${(expenses.raw_materials ?? expenses.rawMaterials ?? 0).toLocaleString('en-IN')}. Sourcing in bulk with cash discounts reduces input costs by 4–7%.\n2. 🚚 **Logistics Consolidation:**\n   - Reduce transport trips from daily to bi-weekly, saving recurring freight expenses.\n3. 📦 **Inventory Spoilage Prevention:**\n   - Enforce First-In-First-Out (FIFO) shelf stocking for perishable goods.`;
-  }
-
-  // 7. PROFIT & MARGINS
-  if (/profit|munafa|मुनाफा|margin|fayda|kamai|income|net profit/i.test(query)) {
-    if (isHindi) {
-      return `📊 **आपकी दुकान का लाभ विश्लेषण (Profit & Margin Breakdown):**\n- **मासिक कुल बिक्री:** ₹${revenue.toLocaleString('en-IN')}\n- **कुल परिचालन खर्च:** ₹${totalExp.toLocaleString('en-IN')}\n- **शुद्ध मुनाफा:** ₹${netProfit.toLocaleString('en-IN')} (शुद्ध मार्जिन: **${marginPct}%**)\n- **दैनिक ब्रेक-ईवन लक्ष्य:** ₹${dailyTarget.toLocaleString('en-IN')} प्रति दिन\n\n🎯 **मुनाफा दोगुना करने का फॉर्मूला:**\n- यदि आप दैनिक बिक्री को ₹${Math.round(revenue / 30)} से बढ़ाकर ₹${Math.round((revenue / 30) * 1.25)} कर लेते हैं, तो आपका मासिक शुद्ध मुनाफा ₹${Math.round(netProfit * 1.5).toLocaleString('en-IN')} हो जाएगा।\n- उच्च-मार्जिन वाले नए उत्पाद जोड़ें और आपूर्तिकर्ताओं से 2% नकद छूट मांगें।`;
-    }
-    return `📊 **Profit & Margin Performance:**\n- **Monthly Revenue:** ₹${revenue.toLocaleString('en-IN')}\n- **Total Operating Costs:** ₹${totalExp.toLocaleString('en-IN')}\n- **Net Monthly Profit:** ₹${netProfit.toLocaleString('en-IN')} (Net Margin: **${marginPct}%**)\n- **Daily Break-Even Target:** ₹${dailyTarget.toLocaleString('en-IN')}/day\n\n🎯 **Margin Expansion Formula:**\n- Increasing average daily sales from ₹${Math.round(revenue / 30)} to ₹${Math.round((revenue / 30) * 1.25)} will scale your monthly take-home profit to ₹${Math.round(netProfit * 1.5).toLocaleString('en-IN')}.\n- Prioritize higher margin items and negotiate 1–2% early cash settlement discounts with wholesalers.`;
-  }
-
-  // 8. DEFAULT REASONING SUMMARY
+  // 4. DEFAULT
   if (isHindi) {
-    return `नमस्ते ${userName}! आपके **${bizType}** के वित्तीय विश्लेषण के अनुसार:\n- **मासिक आय:** ₹${revenue.toLocaleString('en-IN')}\n- **मासिक खर्च:** ₹${totalExp.toLocaleString('en-IN')}\n- **शुद्ध मुनाफा:** ₹${netProfit.toLocaleString('en-IN')} (${marginPct}% मार्जिन)\n- **सर्वोत्तम योजना:** ${topScheme.name_hi || topScheme.name_en}\n\nआप मुझसे व्यवसाय बढ़ाने, खर्च घटाने, लोन आवेदन, उधार वसूली या ग्राहक बढ़ाने के बारे में कोई भी प्रश्न पूछ सकते हैं!`;
+    return `नमस्ते ${userName}! आपके **${bizType}** के लिए:\n- **मासिक आय:** ₹${revenue.toLocaleString('en-IN')}\n- **मासिक मुनाफा:** ₹${netProfit.toLocaleString('en-IN')} (${marginPct}% मार्जिन)\n\nआप मुझसे सरकारी लोन योजनाओं (पीएम स्वनिधि, मुद्रा, विश्वकर्मा, पीएमईजीपी), खर्च घटाने या बिक्री बढ़ाने के बारे में कोई भी प्रश्न पूछ सकते हैं!`;
   }
-
-  return `Hello ${userEnName}! Based on the diagnostic analysis of your **${bizType}**:\n- **Monthly Revenue:** ₹${revenue.toLocaleString('en-IN')}\n- **Monthly Operating Expenses:** ₹${totalExp.toLocaleString('en-IN')}\n- **Net Profit:** ₹${netProfit.toLocaleString('en-IN')} (${marginPct}% Net Margin)\n- **Recommended Scheme:** ${topScheme.name_en}\n\nAsk me any question about growing sales, cutting costs, applying for loans, or managing customer credit!`;
+  return `Hello ${userEnName}! Based on your **${bizType}** (Revenue: ₹${revenue.toLocaleString('en-IN')}, Margin: ${marginPct}%), ask me anything about government schemes, cutting expenses, or scaling profits!`;
 }
 
 async function generateAdvisoryResponse(userId, message, lang = 'en', history = [], clientContext = {}) {
@@ -246,9 +256,9 @@ async function generateAdvisoryResponse(userId, message, lang = 'en', history = 
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
 
   // ==========================================
-  // 1. PRIMARY ENGINE: GOOGLE GEMINI THINKING
+  // 1. PRIMARY ENGINE: GOOGLE GEMINI (Multi-Model Hierarchy)
   // ==========================================
-  if (geminiKey && typeof geminiKey === 'string' && geminiKey.trim().length > 10 && geminiKey !== 'YOUR_GEMINI_API_KEY') {
+  if (geminiKey && typeof geminiKey === 'string' && geminiKey.trim().length > 8 && geminiKey !== 'YOUR_GEMINI_API_KEY') {
     const systemPrompt = buildSystemPrompt(context, lang);
 
     // Format conversation history for Gemini multi-turn format
@@ -264,35 +274,66 @@ async function generateAdvisoryResponse(userId, message, lang = 'en', history = 
     }
     formattedContents.push({ role: 'user', parts: [{ text: message }] });
 
-    // Models with Thinking support in order of preference
-    const geminiModels = [
-      'gemini-2.5-flash',
-      'gemini-2.0-flash',
-      'gemini-1.5-flash',
+    // Model configurations to try in sequence
+    const modelConfigs = [
+      // 1. Gemini 2.5 Flash with thinking
+      {
+        model: 'gemini-2.5-flash',
+        payload: {
+          contents: formattedContents,
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: { thinkingConfig: { thinkingBudget: -1 }, temperature: 0.7, maxOutputTokens: 2048 },
+        },
+      },
+      // 2. Gemini 2.0 Flash
+      {
+        model: 'gemini-2.0-flash',
+        payload: {
+          contents: formattedContents,
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
+        },
+      },
+      // 3. Gemini 1.5 Flash (Universal reliability)
+      {
+        model: 'gemini-1.5-flash',
+        payload: {
+          contents: formattedContents,
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
+        },
+      },
+      // 4. Gemini 1.5 Pro
+      {
+        model: 'gemini-1.5-pro',
+        payload: {
+          contents: formattedContents,
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
+        },
+      },
+      // 5. Fallback payload with prepended system prompt for older endpoint versions
+      {
+        model: 'gemini-1.5-flash',
+        payload: {
+          contents: [
+            {
+              role: 'user',
+              parts: [{ text: `${systemPrompt}\n\n--- USER QUESTION ---\n${message}` }],
+            },
+          ],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
+        },
+      },
     ];
 
-    for (const model of geminiModels) {
+    for (const cfg of modelConfigs) {
       try {
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey.trim()}`;
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${cfg.model}:generateContent?key=${geminiKey.trim()}`;
         
-        const payload = {
-          contents: formattedContents,
-          systemInstruction: {
-            parts: [{ text: systemPrompt }],
-          },
-          generationConfig: {
-            // Enable dynamic thinking budget for deep logical reasoning
-            thinkingConfig: {
-              thinkingBudget: -1,
-            },
-            temperature: 0.7,
-            maxOutputTokens: 2048,
-          },
-        };
-
-        const gRes = await axios.post(geminiUrl, payload, {
+        const gRes = await axios.post(geminiUrl, cfg.payload, {
           headers: { 'Content-Type': 'application/json' },
-          timeout: 15000,
+          timeout: 12000,
         });
 
         const candidate = gRes.data?.candidates?.[0];
@@ -316,13 +357,12 @@ async function generateAdvisoryResponse(userId, message, lang = 'en', history = 
             return {
               reply: reply.trim(),
               thoughts: thoughts ? thoughts.trim() : null,
-              engine: `gemini-thinking (${model})`,
+              engine: `gemini-thinking (${cfg.model})`,
             };
           }
         }
       } catch (gErr) {
-        console.warn(`[ChatService] Gemini model ${model} attempt note:`, gErr.response?.data?.error?.message || gErr.message);
-        // Continue to fallback model
+        console.warn(`[ChatService] Gemini model ${cfg.model} note:`, gErr.response?.data?.error?.message || gErr.message);
       }
     }
   }
@@ -375,7 +415,7 @@ async function generateAdvisoryResponse(userId, message, lang = 'en', history = 
   }
 
   // ==========================================
-  // 3. TERTIARY ENGINE: OFFLINE REASONING ENGINE
+  // 3. TERTIARY ENGINE: INTELLIGENT ADAPTIVE REASONING ENGINE
   // ==========================================
   const fallbackText = generateOfflineFallbackResponse(message, context, lang);
   return {
