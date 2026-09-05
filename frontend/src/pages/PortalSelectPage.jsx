@@ -178,22 +178,16 @@ export default function PortalSelectPage() {
             </div>
           </div>
 
-          {/* Action Row */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-[#e4d9c7]">
-            <div className="text-xs text-[#8a7a68]">
-              {isHindi
-                ? `वर्तमान में चयनित: ${portalType === 'beginner' ? 'पोर्टल A (शुरुआत)' : 'पोर्टल B (विस्तार)'}`
-                : `Active Selection: ${portalType === 'beginner' ? 'Portal A (Shuruaat)' : 'Portal B (Vistaar)'}`}
+          {/* Selection Status Row */}
+          <div className="flex items-center justify-between gap-4 pt-4 border-t border-[#e4d9c7]">
+            <div className="text-xs sm:text-sm font-semibold text-[#1f3a5f] bg-[#faf6ee] px-3.5 py-2 rounded-xl border border-[#e4d9c7] flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#3f6b4f]"></span>
+              <span>
+                {isHindi
+                  ? `वर्तमान में चयनित: ${portalType === 'beginner' ? 'पोर्टल A (शुरुआत)' : 'पोर्टल B (विस्तार)'}`
+                  : `Active Selection: ${portalType === 'beginner' ? 'Portal A (Shuruaat)' : 'Portal B (Vistaar)'}`}
+              </span>
             </div>
-
-            <button
-              type="button"
-              onClick={handleProceed}
-              className="w-full sm:w-auto min-w-[220px] flex items-center justify-center gap-2 py-3.5 px-6 rounded-2xl font-heading font-bold text-sm bg-[#1f3a5f] text-white hover:bg-[#152742] transition shadow-md active:scale-98"
-            >
-              <span>{t('selectAndProceed')}</span>
-              <ArrowRight className="w-4 h-4 text-[#e8a33d]" />
-            </button>
           </div>
         </div>
       </div>
