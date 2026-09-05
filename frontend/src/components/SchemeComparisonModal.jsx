@@ -120,14 +120,14 @@ export default function SchemeComparisonModal({
                       Option A
                     </span>
                     <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#e3efe6] text-[#3f6b4f] border border-[#3f6b4f]/30">
-                      {comparison.eligibility?.schemeA?.matchPercentage || schemeA.matchPercentage}% {isHindi ? 'मैच' : 'Match'}
+                      {comparison.eligibility?.schemeA?.matchPercentage || schemeA.matchPercentage || schemeA.match || 85}% {isHindi ? 'मैच' : 'Match'}
                     </span>
                   </div>
                   <h4 className="font-heading text-base sm:text-lg font-bold text-[#1f3a5f] leading-snug">
-                    {isHindi ? schemeA.name_hi : schemeA.name_en}
+                    {isHindi ? (schemeA.name_hi || schemeA.name || schemeA.name_en) : (schemeA.name_en || schemeA.name)}
                   </h4>
                   <p className="text-xs text-[#a36a2d] font-medium mt-0.5">
-                    {isHindi ? schemeA.ministry_hi : schemeA.ministry_en}
+                    {isHindi ? (schemeA.ministry_hi || schemeA.ministry || schemeA.ministry_en) : (schemeA.ministry_en || schemeA.ministry)}
                   </p>
                 </div>
 
@@ -138,14 +138,14 @@ export default function SchemeComparisonModal({
                       Option B
                     </span>
                     <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#e3efe6] text-[#3f6b4f] border border-[#3f6b4f]/30">
-                      {comparison.eligibility?.schemeB?.matchPercentage || schemeB.matchPercentage}% {isHindi ? 'मैच' : 'Match'}
+                      {comparison.eligibility?.schemeB?.matchPercentage || schemeB.matchPercentage || schemeB.match || 85}% {isHindi ? 'मैच' : 'Match'}
                     </span>
                   </div>
                   <h4 className="font-heading text-base sm:text-lg font-bold text-[#1f3a5f] leading-snug">
-                    {isHindi ? schemeB.name_hi : schemeB.name_en}
+                    {isHindi ? (schemeB.name_hi || schemeB.name || schemeB.name_en) : (schemeB.name_en || schemeB.name)}
                   </h4>
                   <p className="text-xs text-[#a36a2d] font-medium mt-0.5">
-                    {isHindi ? schemeB.ministry_hi : schemeB.ministry_en}
+                    {isHindi ? (schemeB.ministry_hi || schemeB.ministry || schemeB.ministry_en) : (schemeB.ministry_en || schemeB.ministry)}
                   </p>
                 </div>
               </div>

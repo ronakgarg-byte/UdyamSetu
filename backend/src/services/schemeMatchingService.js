@@ -458,16 +458,55 @@ function matchSchemes(user = {}, business = {}, financial = {}, problems = [], l
   return evaluatedSchemes;
 }
 
+function findSchemeCanonical(codeOrName) {
+  if (!codeOrName) return null;
+  const raw = String(codeOrName).trim();
+  const normalized = raw.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  // 1. Direct code exact match
+  let found = SCHEMES_MASTER.find((s) => s.code.toLowerCase() === raw.toLowerCase() || s.code === raw);
+  if (found) return found;
+
+  // 2. Normalized code match (e.g. "pm-svanidhi" -> "pmsvanidhi")
+  found = SCHEMES_MASTER.find((s) => s.code.toLowerCase().replace(/[^a-z0-9]/g, '') === normalized);
+  if (found) return found;
+
+  // 3. Name match (English or Hindi)
+  found = SCHEMES_MASTER.find((s) =>
+    s.name_en.toLowerCase().replace(/[^a-z0-9]/g, '') === normalized ||
+    s.name_hi.toLowerCase().replace(/[^a-z0-9]/g, '') === normalized
+  );
+  if (found) return found;
+
+  // 4. Common keywords and alias mappings
+  if (normalized.includes('tarun')) return SCHEMES_MASTER.find((s) => s.code === 'mudra_tarun');
+  if (normalized.includes('kishore') || normalized.includes('kishor')) return SCHEMES_MASTER.find((s) => s.code === 'mudra_kishore');
+  if (normalized.includes('shishu') || normalized.includes('sisu')) return SCHEMES_MASTER.find((s) => s.code === 'mudra_shishu');
+  if (normalized.includes('svanidhi') || normalized.includes('swanidhi') || normalized.includes('vendor')) return SCHEMES_MASTER.find((s) => s.code === 'pm_svanidhi');
+  if (normalized.includes('vishwakarma') || normalized.includes('viswakarma')) return SCHEMES_MASTER.find((s) => s.code === 'pm_vishwakarma');
+  if (normalized.includes('pmegp') || normalized.includes('kvic')) return SCHEMES_MASTER.find((s) => s.code === 'pmegp');
+  if (normalized.includes('standup') || normalized.includes('stand_up')) return SCHEMES_MASTER.find((s) => s.code === 'stand_up_india');
+  if (normalized.includes('udyam') || normalized.includes('registration')) return SCHEMES_MASTER.find((s) => s.code === 'udyam_reg');
+  if (normalized.includes('pmkvy') || normalized.includes('kaushal')) return SCHEMES_MASTER.find((s) => s.code === 'pmkvy');
+  if (normalized.includes('mudra')) return SCHEMES_MASTER.find((s) => s.code === 'mudra_shishu');
+
+  // 5. Partial contains match against scheme name
+  found = SCHEMES_MASTER.find((s) =>
+    s.name_en.toLowerCase().includes(raw.toLowerCase()) ||
+    raw.toLowerCase().includes(s.code.toLowerCase())
+  );
+  if (found) return found;
+
+  return null;
+}
+
 /**
  * 5-Point Government Schemes Side-by-Side Comparison Engine
  * Computes deterministic comparison points tailored to user profile
  */
 function compareSchemes(schemeAIdOrCode, schemeBIdOrCode, user = {}, business = {}, financial = {}, problems = [], localContext = {}) {
-  const codeA = String(schemeAIdOrCode || '').toLowerCase().trim();
-  const codeB = String(schemeBIdOrCode || '').toLowerCase().trim();
-
-  const schemeA = SCHEMES_MASTER.find((s) => s.code.toLowerCase() === codeA || s.code === codeA);
-  const schemeB = SCHEMES_MASTER.find((s) => s.code.toLowerCase() === codeB || s.code === codeB);
+  const schemeA = findSchemeCanonical(schemeAIdOrCode);
+  const schemeB = findSchemeCanonical(schemeBIdOrCode);
 
   if (!schemeA || !schemeB) {
     throw new Error(`Invalid scheme code(s) provided: '${schemeAIdOrCode}', '${schemeBIdOrCode}'`);

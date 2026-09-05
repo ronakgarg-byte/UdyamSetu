@@ -93,15 +93,40 @@ async function compareSchemesHandler(req, res) {
       });
     }
 
-    const { user, business, sales, expenses, items, problems } = await getUserContextData(userId);
+    const dbContext = await getUserContextData(userId);
+    const clientCtx = body.clientContext || {};
+
+    // Merge database context with any clientContext passed from frontend (for serverless/guest sessions)
+    const user = { ...(dbContext.user || {}), ...(body.user || {}), ...(clientCtx.user || {}) };
+    const business = { ...(dbContext.business || {}), ...(body.business || {}), ...(clientCtx.business || {}) };
+    const sales = { ...(dbContext.sales || {}), ...(body.sales || {}), ...(clientCtx.sales || {}) };
+    const expenses = { ...(dbContext.expenses || {}), ...(body.expenses || {}), ...(clientCtx.expenses || {}) };
+    const items = (Array.isArray(body.items) && body.items.length > 0)
+      ? body.items
+      : (Array.isArray(clientCtx.items) && clientCtx.items.length > 0)
+      ? clientCtx.items
+      : (dbContext.items || []);
+    const problems = (Array.isArray(body.problems) && body.problems.length > 0)
+      ? body.problems
+      : (Array.isArray(clientCtx.problems) && clientCtx.problems.length > 0)
+      ? clientCtx.problems
+      : (dbContext.problems || []);
 
     const isBeginner =
       body.portalType === 'beginner' ||
       query.portalType === 'beginner' ||
       user.portal_type === 'beginner' ||
-      business.portal_type === 'beginner';
+      business.portal_type === 'beginner' ||
+      clientCtx.isBeginner === true;
 
-    const localContext = await getAggregatedLocalContext(user.district || business.district || 'Varanasi');
+    let localContext = {};
+    try {
+      localContext = await getAggregatedLocalContext(user.district || business.district || 'Varanasi');
+    } catch (locErr) {
+      console.warn('Warning: getAggregatedLocalContext fallback used in compare:', locErr.message);
+      localContext = { district: user.district || business.district || 'Varanasi', state: 'UP' };
+    }
+
     const financial = isBeginner
       ? getBeginnerRecommendation(user, business, problems, localContext)
       : calculateFinancialMetrics(sales, expenses, items, problems);

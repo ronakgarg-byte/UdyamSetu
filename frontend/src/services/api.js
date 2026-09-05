@@ -83,10 +83,10 @@ export const api = {
 
   // 8. Schemes & Local Context
   getSchemes: (userId) => request(`/schemes/${userId}`),
-  compareSchemes: (schemeIdA, schemeIdB, userId, portalType) =>
+  compareSchemes: (schemeIdA, schemeIdB, userId, portalType, clientContext = {}) =>
     request('/schemes/compare', {
       method: 'POST',
-      body: JSON.stringify({ schemeIdA, schemeIdB, userId, portalType }),
+      body: JSON.stringify({ schemeIdA, schemeIdB, userId, portalType, clientContext }),
     }),
   getLocalContext: (userId) => request(`/local-context/${userId}`),
 
