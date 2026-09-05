@@ -72,6 +72,12 @@ export const api = {
 
   getItems: (userId) => request(`/items/${userId}`),
 
+  scanBahiKhata: (payload) =>
+    request('/items/scan', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
   // 7. Financial Analysis
   getAnalysis: (userId) => request(`/analysis/${userId}`),
 

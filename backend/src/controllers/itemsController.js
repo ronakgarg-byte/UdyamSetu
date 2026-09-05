@@ -1,5 +1,6 @@
 const { pool, inMemoryStore, isPostgres } = require('../config/db');
 const crypto = require('crypto');
+const { extractBahiKhataFromImage, parsePrice } = require('../services/ocrService');
 
 function parseNum(val) {
   if (val === undefined || val === null || val === '') return 0.0;
@@ -100,7 +101,43 @@ async function getItems(req, res) {
   }
 }
 
+/**
+ * Scan handwritten Bahi Khata photo and return transcribed 3-column table
+ */
+async function scanBahiKhata(req, res) {
+  try {
+    const { imageBase64, image, mimeType, text } = req.body || {};
+
+    if (!imageBase64 && !image && !text) {
+      return res.status(400).json({
+        error: 'Please provide an image photo of your Bahi Khata or text table.',
+      });
+    }
+
+    const result = await extractBahiKhataFromImage({
+      imageBase64: imageBase64 || image,
+      mimeType: mimeType || 'image/jpeg',
+      text: text || '',
+    });
+
+    return res.json({
+      success: true,
+      items: result.items || [],
+      rowCount: result.rowCount || (result.items ? result.items.length : 0),
+      notes: result.notes || 'Bahi Khata scanned successfully',
+      engine: result.engine || 'ocr-vision',
+    });
+  } catch (err) {
+    console.error('Error in scanBahiKhata:', err);
+    return res.status(500).json({
+      error: 'Failed to scan Bahi Khata',
+      details: err.message,
+    });
+  }
+}
+
 module.exports = {
   saveItems,
   getItems,
+  scanBahiKhata,
 };

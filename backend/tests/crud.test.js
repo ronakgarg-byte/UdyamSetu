@@ -194,4 +194,52 @@ describe('CRUD Endpoints Integration Tests', () => {
     assert.strictEqual(data.data.expenses.rent, 5000);
     assert.strictEqual(data.data.items.length, 3);
   });
+  test('POST /api/items/scan - should parse handwritten/text table from Bahi Khata', async () => {
+    const res = await fetch(`${baseUrl}/items/scan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: `Mustard Oil 1L | 145 | 120
+Sugar 1kg | 42 | 36
+Tea 250g | 75 | 60`,
+      }),
+    });
+
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.strictEqual(data.items.length, 3);
+    assert.strictEqual(data.items[0].desc, 'Mustard Oil 1L');
+    assert.strictEqual(data.items[0].sellPrice, 145);
+    assert.strictEqual(data.items[0].costPrice, 120);
+  });
+
+  test('POST /api/items/scan - fallback returns structured items with confidence flags', async () => {
+    const res = await fetch(`${baseUrl}/items/scan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        imageBase64: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBD...',
+      }),
+    });
+
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.ok(data.items.length >= 3);
+    assert.ok(data.items.some((it) => it.isLowConfidence !== undefined));
+  });
+
+  test('POST /api/items/scan - should reject empty payload', async () => {
+    const res = await fetch(`${baseUrl}/items/scan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.ok(data.error);
+  });
+
 });

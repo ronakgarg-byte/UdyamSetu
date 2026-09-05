@@ -32,7 +32,9 @@ router.get('/expenses/:userId', expensesController.getExpenses);
 router.post('/profile/:userId', profileController.saveProfile);
 router.get('/profile/:userId', profileController.getProfile);
 
-// Items routes
+// Items & Bahi Khata OCR routes
+router.post('/items/scan', itemsController.scanBahiKhata);
+router.post('/items/bulk/:userId', itemsController.saveItems);
 router.post('/items/:userId', itemsController.saveItems);
 router.get('/items/:userId', itemsController.getItems);
 
