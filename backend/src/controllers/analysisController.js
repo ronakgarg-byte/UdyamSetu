@@ -1,6 +1,6 @@
 const { pool, inMemoryStore, isPostgres } = require('../config/db');
 const { calculateFinancialMetrics } = require('../services/financialService');
-const { getBeginnerRecommendation } = require('../services/schemeMatchingService');
+const { getBeginnerRecommendation, matchSchemes } = require('../services/schemeMatchingService');
 const { getAggregatedLocalContext } = require('../services/externalData/localContextAggregator');
 
 async function getAnalysis(req, res) {
@@ -48,12 +48,15 @@ async function getAnalysis(req, res) {
       req.query.portal_type === 'beginner' ||
       req.query.portalType === 'beginner';
 
+    const localContext = await getAggregatedLocalContext(user.district || business.district || 'Varanasi');
     let analysis;
+
     if (isBeginner) {
-      const localContext = await getAggregatedLocalContext(user.district || business.district || 'Varanasi');
       analysis = getBeginnerRecommendation(user, business, problems, localContext);
+      analysis.schemes = matchSchemes(user, business, analysis, problems, localContext);
     } else {
       analysis = calculateFinancialMetrics(sales, expenses, items, problems);
+      analysis.schemes = matchSchemes(user, business, analysis, problems, localContext);
     }
 
     return res.json({

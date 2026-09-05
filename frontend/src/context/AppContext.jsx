@@ -3,6 +3,118 @@ import { T } from '../i18n/translations';
 
 const AppContext = createContext(null);
 
+export function getStandardMatchedSchemes(user = {}, biz = {}, rev = 0, problems = [], isBeginner = false) {
+  const userGender = (user?.gender || '').toLowerCase();
+  const bizWhat = (biz?.what || biz?.interests || '').toLowerCase();
+  const bizType = (biz?.type || '').toLowerCase();
+  const safeProblems = Array.isArray(problems) ? problems : [];
+  const isArtisan = /tailor|sew|cloth|carpenter|wood|iron|smith|potter|basket|weave|barber|artisan/i.test(bizWhat) || /tailor|boutique/i.test(bizType);
+
+  const list = [
+    {
+      code: 'pm_svanidhi',
+      name_en: 'PM-SVANidhi (Street Vendor Loan)',
+      name_hi: 'पीएम स्वनिधि (स्ट्रीट वेंडर्स ऋण)',
+      ministry_en: 'Ministry of Housing and Urban Affairs',
+      ministry_hi: 'आवासन और शहरी कार्य मंत्रालय',
+      description_en: 'Collateral-free working capital loan up to ₹50,000 with 7% interest subsidy and UPI cashback.',
+      description_hi: 'डिजिटल लेनदेन पर 7% ब्याज सब्सिडी व कैशबैक के साथ ₹50,000 तक का संपार्श्विक-मुक्त कार्यशील ऋण।',
+      loanCeiling: 50000,
+      matchPercentage: rev > 0 && rev < 15000 ? 92 : rev <= 30000 ? 88 : 72,
+      portalUrl: 'https://pmsvanidhi.mohua.gov.in/',
+      keyBenefits_en: ['No collateral or guarantor needed', '7% direct interest subsidy', 'Limit steps up to ₹50k on prompt repayment'],
+      keyBenefits_hi: ['किसी बंधक या गारंटी की जरूरत नहीं', '7% सीधी ब्याज सब्सिडी', 'समय पर चुकाने पर ₹50,000 तक विस्तार'],
+    },
+    {
+      code: 'pm_vishwakarma',
+      name_en: 'PM Vishwakarma Scheme',
+      name_hi: 'पीएम विश्वकर्मा योजना',
+      ministry_en: 'Ministry of MSME / Skill Development',
+      ministry_hi: 'एमएसएमई मंत्रालय / कौशल विकास',
+      description_en: 'Up to ₹3 Lakh loan at 5% fixed interest + ₹15,000 free toolkit e-voucher for artisans and craftsmen.',
+      description_hi: 'कारीगरों व हुनरमंदों के लिए 5% रियायती ब्याज पर ₹3 लाख तक का ऋण + ₹15,000 का टूलकिट वाउचर।',
+      loanCeiling: 300000,
+      matchPercentage: isArtisan ? 96 : 85,
+      portalUrl: 'https://pmvishwakarma.gov.in/',
+      keyBenefits_en: ['5% fixed low interest rate', '₹15,000 free modern toolkit grant', '₹500/day training stipend & official ID'],
+      keyBenefits_hi: ['5% निश्चित रियायती ब्याज दर', '₹15,000 का आधुनिक टूलकिट अनुदान', '₹500/दिन वजीफा व आधिकारिक पहचान पत्र'],
+    },
+    {
+      code: 'pmegp',
+      name_en: 'PMEGP (Prime Minister Employment Generation)',
+      name_hi: 'पीएमईजीपी (प्रधानमंत्री रोजगार सृजन कार्यक्रम)',
+      ministry_en: 'Ministry of MSME / KVIC',
+      ministry_hi: 'सूक्ष्म, लघु एवं मध्यम उद्यम मंत्रालय',
+      description_en: '25% to 35% non-repayable government capital subsidy grant on project costs up to ₹50 Lakhs.',
+      description_hi: 'नई विनिर्माण व सेवा इकाइयों हेतु परियोजना लागत पर 25% से 35% तक सीधी सरकारी सब्सिडी।',
+      loanCeiling: 5000000,
+      matchPercentage: safeProblems.includes('workingcap') || safeProblems.includes('loanrepay') || rev >= 25000 ? 89 : 82,
+      portalUrl: 'https://www.kviconline.gov.in/pmegpeportal/',
+      keyBenefits_en: ['Up to 35% capital grant (no repayment for subsidy)', 'Covers machinery, setup & working funds', 'EDP entrepreneurship training included'],
+      keyBenefits_hi: ['35% तक पूंजीगत सब्सिडी (माफ अनुदान)', 'मशीनरी, सेटअप व कार्यशील पूंजी शामिल', 'ईडीपी उद्यमिता प्रशिक्षण सम्मिलित'],
+    },
+    {
+      code: 'mudra_shishu',
+      name_en: 'Pradhan Mantri Mudra Yojana (Shishu)',
+      name_hi: 'प्रधानमंत्री मुद्रा योजना (शिशु)',
+      ministry_en: 'Ministry of Finance / MSME',
+      ministry_hi: 'वित्त मंत्रालय / एमएसएमई',
+      description_en: 'Zero-collateral micro-credit loan up to ₹50,000 with nominal bank interest and quick disbursement.',
+      description_hi: 'बिना किसी गारंटी के ₹50,000 तक का सूक्ष्म ऋण, त्वरित बैंक वितरण के साथ।',
+      loanCeiling: 50000,
+      matchPercentage: rev <= 30000 || isBeginner ? 90 : 80,
+      portalUrl: 'https://www.mudra.org.in/',
+      keyBenefits_en: ['No collateral or processing charges', 'Mudra debit card for instant withdrawal', 'Covers initial stock and daily cash needs'],
+      keyBenefits_hi: ['कोई बंधक या प्रोसेसिंग शुल्क नहीं', 'मुद्रा कार्ड द्वारा तत्काल निकासी', 'शुरुआती स्टॉक व दैनिक खर्च हेतु उत्तम'],
+    },
+    {
+      code: 'mudra_kishore',
+      name_en: 'Pradhan Mantri Mudra Yojana (Kishore)',
+      name_hi: 'प्रधानमंत्री मुद्रा योजना (किशोर)',
+      ministry_en: 'Ministry of Finance / MSME',
+      ministry_hi: 'वित्त मंत्रालय / एमएसएमई',
+      description_en: 'Working capital and equipment financing from ₹50,000 up to ₹5,00,000 for growing micro-enterprises.',
+      description_hi: 'बढ़ते व्यवसायों के लिए ₹50,000 से ₹5,00,000 तक का उपकरण व कार्यशील पूंजी ऋण।',
+      loanCeiling: 500000,
+      matchPercentage: rev >= 20000 && rev <= 60000 ? 87 : 78,
+      portalUrl: 'https://www.mudra.org.in/',
+      keyBenefits_en: ['Loans up to ₹5 Lakh without third-party collateral', 'Flexible 5-year repayment tenure', 'Covers equipment purchase & inventory scale'],
+      keyBenefits_hi: ['बिना किसी तीसरे पक्ष की गारंटी के ₹5 लाख तक ऋण', '5 वर्ष तक की आसान किश्तें', 'उपकरण व स्टॉक विस्तार दोनों हेतु'],
+    },
+    {
+      code: 'mudra_tarun',
+      name_en: 'Pradhan Mantri Mudra Yojana (Tarun)',
+      name_hi: 'प्रधानमंत्री मुद्रा योजना (तरुण)',
+      ministry_en: 'Ministry of Finance / MSME',
+      ministry_hi: 'वित्त मंत्रालय / एमएसएमई',
+      description_en: 'Loans from ₹5,00,000 up to ₹10,00,000 for established enterprises scaling up operations.',
+      description_hi: 'स्थापित व्यवसायों के बड़े पैमाने पर विस्तार के लिए ₹5,00,000 से ₹10,00,000 तक का ऋण।',
+      loanCeiling: 1000000,
+      matchPercentage: rev >= 50000 ? 86 : 74,
+      portalUrl: 'https://www.mudra.org.in/',
+      keyBenefits_en: ['Higher credit limit up to ₹10-20 Lakhs', 'Competitive banking interest rates', 'Supports expansion and technology upgrade'],
+      keyBenefits_hi: ['₹10-20 लाख तक की उच्च ऋण सीमा', 'प्रतिस्पर्धी बैंक ब्याज दरें', 'शाखा विस्तार व आधुनिक तकनीक में सहायक'],
+    },
+    {
+      code: 'stand_up_india',
+      name_en: 'Stand-Up India Scheme',
+      name_hi: 'स्टैंड-अप इंडिया योजना',
+      ministry_en: 'Ministry of Finance / SIDBI',
+      ministry_hi: 'वित्त मंत्रालय / सिडबी',
+      description_en: 'Bank loans from ₹10 Lakh to ₹1 Crore for Women and SC/ST entrepreneurs setting up greenfield ventures.',
+      description_hi: 'महिला व अनुसूचित जाति/जनजाति उद्यमियों के लिए ₹10 लाख से ₹1 करोड़ तक का व्यापार ऋण।',
+      loanCeiling: 10000000,
+      matchPercentage: userGender === 'female' ? 94 : 65,
+      portalUrl: 'https://www.standupmitra.in/',
+      keyBenefits_en: ['Significant funding range ₹10 Lakh to ₹1 Crore', 'Dedicated handholding support by SIDBI', 'Repayment tenure up to 7 years with 18m moratorium'],
+      keyBenefits_hi: ['₹10 लाख से ₹1 करोड़ तक की पर्याप्त पूंजी', 'सिडबी द्वारा विशेष मार्गदर्शन व हैंडहोल्डिंग', '18 महीने की छूट के साथ 7 वर्षों में पुनर्भुगतान'],
+    },
+  ];
+
+  return list.sort((a, b) => b.matchPercentage - a.matchPercentage);
+}
+
+
 export function AppProvider({ children }) {
   const [lang, setLang] = useState(() => localStorage.getItem('udyam_lang') || 'en');
   const [userId, setUserId] = useState(() => localStorage.getItem('udyam_user_id') || null);
@@ -271,6 +383,7 @@ export function AppProvider({ children }) {
           loanCeiling: 50000,
           match: 92,
         },
+        schemes: getStandardMatchedSchemes(user, { ...biz, ...beginnerData }, 0, beginnerData.barriers || [], true),
       };
     }
 
@@ -368,8 +481,9 @@ export function AppProvider({ children }) {
       debtRatio,
       riskLevel,
       scheme,
+      schemes: getStandardMatchedSchemes(user, biz, rev, problems, false),
     };
-  }, [portalType, beginnerData, sales, expenses, items, problems]);
+  }, [portalType, user, biz, beginnerData, beginnerData, sales, expenses, items, problems]);
 
   const resetAll = () => {
     localStorage.clear();
