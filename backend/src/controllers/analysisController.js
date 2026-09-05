@@ -1,5 +1,6 @@
 const { pool, inMemoryStore, isPostgres } = require('../config/db');
-const { calculateFinancialMetrics, calculateBeginnerPlan } = require('../services/financialService');
+const { calculateFinancialMetrics } = require('../services/financialService');
+const { getBeginnerRecommendation } = require('../services/schemeMatchingService');
 const { getAggregatedLocalContext } = require('../services/externalData/localContextAggregator');
 
 async function getAnalysis(req, res) {
@@ -50,7 +51,7 @@ async function getAnalysis(req, res) {
     let analysis;
     if (isBeginner) {
       const localContext = await getAggregatedLocalContext(user.district || business.district || 'Varanasi');
-      analysis = calculateBeginnerPlan(user, business, problems, localContext);
+      analysis = getBeginnerRecommendation(user, business, problems, localContext);
     } else {
       analysis = calculateFinancialMetrics(sales, expenses, items, problems);
     }

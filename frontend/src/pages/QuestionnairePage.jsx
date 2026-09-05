@@ -9,9 +9,10 @@ import {
   EXPENSE_FIELDS,
   CUSTOMER_OPTIONS,
   PROBLEM_OPTIONS,
-  GROWTH_ASPIRATION_OPTIONS,
-  GROWTH_BARRIER_OPTIONS,
-  CREDIT_HISTORY_OPTIONS,
+  GROWTH_INTENT_OPTIONS,
+  GROWTH_BLOCKER_OPTIONS,
+  EXISTING_LOAN_TYPE_OPTIONS,
+  LOAN_PURPOSE_OPTIONS,
 } from '../i18n/translations';
 import { api } from '../services/api';
 import { stopSpeaking } from '../utils/speechUtils';
@@ -22,12 +23,13 @@ import {
   Users,
   Compass,
   AlertCircle,
+  Rocket,
   ShieldCheck,
 } from 'lucide-react';
 
 export default function QuestionnairePage() {
   const navigate = useNavigate();
-  const [qStep, setQStep] = useState(0); // 0..5
+  const [qStep, setQStep] = useState(0); // 0..6 (7 sections: A, B, C, D, E, F, G)
 
   const {
     t,
@@ -52,18 +54,19 @@ export default function QuestionnairePage() {
     lang,
   } = useApp();
 
-  // If user is in Beginner Portal ("Shuruaat"), render the dedicated Discovery flow
+  // If user is in Beginner Portal ("Shuruaat"), render dedicated Discovery flow
   if (portalType === 'beginner') {
     return <BeginnerQuestionnaire />;
   }
 
   const sectionTitles = [
-    t("secA"),
-    t("secB"),
-    t("secC"),
-    t("secD"),
-    t("secE"),
-    t("secF"),
+    t("secA"), // Your business
+    t("secB"), // Sales & revenue
+    t("secC"), // Monthly expenses
+    t("secD"), // Your customers
+    t("secE"), // Competition nearby
+    t("secF"), // Biggest problem
+    t("secG"), // Growth Readiness (Section G)
   ];
 
   const sectionIcons = [
@@ -73,6 +76,7 @@ export default function QuestionnairePage() {
     Users,
     Compass,
     AlertCircle,
+    Rocket,
   ];
 
   const handleBack = () => {
@@ -97,9 +101,6 @@ export default function QuestionnairePage() {
             await api.saveBusiness(userId, {
               ...biz,
               portal_type: 'existing',
-              growth_aspiration: growthData.aspiration,
-              growth_barriers: growthData.barriers,
-              credit_history: growthData.creditHistory,
             });
           } else if (stepToSave === 1) {
             await api.saveSales(userId, sales);
@@ -111,12 +112,23 @@ export default function QuestionnairePage() {
               competition,
               problems,
             });
+          } else if (stepToSave === 6) {
+            await api.saveProfile(userId, {
+              customers,
+              competition,
+              problems,
+              growth_intent: growthData.intent || 'grow',
+              growth_blocker: growthData.blocker || [],
+              existing_loan_type: growthData.existingLoanType || 'no',
+              loan_purpose: growthData.loanPurpose || [],
+            });
             await api.saveBusiness(userId, {
               ...biz,
               portal_type: 'existing',
-              growth_aspiration: growthData.aspiration,
-              growth_barriers: growthData.barriers,
-              credit_history: growthData.creditHistory,
+              growth_intent: growthData.intent || 'grow',
+              growth_blocker: growthData.blocker || [],
+              existing_loan_type: growthData.existingLoanType || 'no',
+              loan_purpose: growthData.loanPurpose || [],
             });
           }
         } catch (err) {
@@ -125,7 +137,7 @@ export default function QuestionnairePage() {
       })();
     }
 
-    if (qStep < 5) {
+    if (qStep < 6) {
       setQStep((prev) => prev + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
@@ -133,8 +145,8 @@ export default function QuestionnairePage() {
     }
   };
 
-  // Progress: 20% to 60%
-  const progressPct = 20 + ((qStep + 1) / 6) * 40;
+  // Progress: 20% to 65% across 7 steps
+  const progressPct = 20 + ((qStep + 1) / 7) * 45;
   const CurrentIcon = sectionIcons[qStep] || Store;
 
   return (
@@ -148,14 +160,14 @@ export default function QuestionnairePage() {
       <div className="max-w-4xl w-full mx-auto">
         <div className="bg-[#fffdf9] rounded-3xl border border-[#e4d9c7] p-5 sm:p-8 shadow-sm">
           {/* Section Header */}
-          <div className="flex items-start justify-between gap-3 mb-4 pb-4 border-b border-[#e4d9c7]">
+          <div className="flex items-start justify-between gap-3 mb-5 pb-4 border-b border-[#e4d9c7]">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl bg-[#1f3a5f] text-[#e8a33d] flex items-center justify-center shadow-sm">
                 <CurrentIcon className="w-5 h-5" />
               </div>
               <div>
                 <p className="text-xs font-bold text-[#a36a2d] uppercase tracking-wider">
-                  {t("sectionOf")} {qStep + 1} / 6 • Portal B: Vistaar
+                  {t("sectionOf")} {qStep + 1} / 7 • Portal B: Vistaar
                 </p>
                 <h2 className="font-heading text-xl sm:text-2xl font-bold text-[#1f3a5f]">
                   {sectionTitles[qStep]}
@@ -214,55 +226,6 @@ export default function QuestionnairePage() {
                     />
                   </Field>
                 </div>
-              </div>
-
-              {/* Growth Aspiration & Credit History */}
-              <div className="mt-4 pt-4 border-t border-[#e4d9c7] grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label={t("qGrowthAspiration")}>
-                  <div className="flex flex-col gap-2">
-                    {GROWTH_ASPIRATION_OPTIONS.map((optItem) => {
-                      const isSelected = growthData.aspiration === optItem.key;
-                      return (
-                        <button
-                          key={optItem.key}
-                          type="button"
-                          onClick={() => setGrowthData({ ...growthData, aspiration: optItem.key })}
-                          className={'p-3 rounded-xl border text-xs font-semibold transition text-left flex items-center justify-between ' + (
-                            isSelected
-                              ? 'bg-[#1f3a5f] text-white border-[#1f3a5f] shadow-sm'
-                              : 'bg-[#faf6ee] text-[#5b4636] border-[#e4d9c7] hover:bg-[#efe6d6]'
-                          )}
-                        >
-                          <span>{opt(optItem)}</span>
-                          {isSelected && <span className="text-[#e8a33d] font-bold">✓</span>}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </Field>
-
-                <Field label={t("qCreditHistory")}>
-                  <div className="flex flex-col gap-2">
-                    {CREDIT_HISTORY_OPTIONS.map((c) => {
-                      const isSelected = growthData.creditHistory === c.key;
-                      return (
-                        <button
-                          key={c.key}
-                          type="button"
-                          onClick={() => setGrowthData({ ...growthData, creditHistory: c.key })}
-                          className={'p-3 rounded-xl border text-xs font-semibold transition text-left flex items-center justify-between ' + (
-                            isSelected
-                              ? 'bg-[#1f3a5f] text-white border-[#1f3a5f] shadow-sm'
-                              : 'bg-[#faf6ee] text-[#5b4636] border-[#e4d9c7] hover:bg-[#efe6d6]'
-                          )}
-                        >
-                          <span>{opt(c)}</span>
-                          {isSelected && <span className="text-[#e8a33d] font-bold">✓</span>}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </Field>
               </div>
 
               {/* Google Map Interactive Location Picker - Full Width */}
@@ -413,7 +376,7 @@ export default function QuestionnairePage() {
             </div>
           )}
 
-          {/* Section F: Biggest problem & Growth bottlenecks */}
+          {/* Section F: Biggest problem */}
           {qStep === 5 && (
             <div className="space-y-5">
               <VoiceRow
@@ -421,7 +384,7 @@ export default function QuestionnairePage() {
                 helperText={
                   lang === 'hi'
                     ? "अपनी सबसे मुख्य समस्या या बाधाओं को चुनें"
-                    : "Select key bottlenecks affecting your business"
+                    : "Select key problems affecting your business"
                 }
               />
 
@@ -447,31 +410,127 @@ export default function QuestionnairePage() {
                   })}
                 </div>
               </Field>
+            </div>
+          )}
 
-              {/* Growth Bottlenecks */}
+          {/* Section G: Growth Readiness */}
+          {qStep === 6 && (
+            <div className="space-y-6">
+              <VoiceRow
+                textToRead={`${t("secG")}. ${t("qGrowthIntent")}. ${t("qGrowthBlocker")}`}
+                helperText={
+                  lang === 'hi'
+                    ? "व्यवसाय विस्तार की दिशा, मुख्य रुकावट और ऋण आवश्यकताएं बताएं"
+                    : "Answer questions on growth goals, bottlenecks, and credit history"
+                }
+              />
+
+              {/* Q1: Growth intent */}
+              <Field label={t("qGrowthIntent")}>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {GROWTH_INTENT_OPTIONS.map((item) => {
+                    const isSelected = (growthData.intent || 'grow') === item.key;
+                    return (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() => setGrowthData({ ...growthData, intent: item.key })}
+                        className={`p-3.5 rounded-xl border text-xs font-semibold transition text-left flex items-center justify-between ${
+                          isSelected
+                            ? 'bg-[#1f3a5f] text-white border-[#1f3a5f] shadow-sm'
+                            : 'bg-[#faf6ee] text-[#5b4636] border-[#e4d9c7] hover:bg-[#efe6d6]'
+                        }`}
+                      >
+                        <span>{opt(item)}</span>
+                        {isSelected && <span className="text-[#e8a33d] font-bold">✓</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </Field>
+
+              {/* Q2: Growth blockers */}
               <div className="pt-4 border-t border-[#e4d9c7]">
-                <Field label={t("qGrowthBarriers")} optional>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {GROWTH_BARRIER_OPTIONS.map((gb) => {
-                      const isSelected = (growthData.barriers || []).includes(gb.key);
+                <Field label={t("qGrowthBlocker")}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                    {GROWTH_BLOCKER_OPTIONS.map((gb) => {
+                      const isSelected = (growthData.blocker || []).includes(gb.key);
                       return (
                         <button
                           key={gb.key}
                           type="button"
                           onClick={() =>
                             toggle(
-                              growthData.barriers || [],
+                              growthData.blocker || [],
                               gb.key,
-                              (newList) => setGrowthData({ ...growthData, barriers: newList })
+                              (newList) => setGrowthData({ ...growthData, blocker: newList })
                             )
                           }
-                          className={'p-3 rounded-xl border text-xs font-semibold transition text-left flex items-center justify-between ' + (
+                          className={`p-3.5 rounded-xl border text-xs font-semibold transition text-left flex items-center justify-between ${
                             isSelected
                               ? 'bg-[#1f3a5f] text-white border-[#1f3a5f] shadow-sm'
                               : 'bg-[#faf6ee] text-[#5b4636] border-[#e4d9c7] hover:bg-[#efe6d6]'
-                          )}
+                          }`}
                         >
                           <span>{opt(gb)}</span>
+                          {isSelected && <span className="text-[#e8a33d] font-bold ml-1">✓</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </Field>
+              </div>
+
+              {/* Q3: Existing loan history */}
+              <div className="pt-4 border-t border-[#e4d9c7]">
+                <Field label={t("qExistingLoanType")}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {EXISTING_LOAN_TYPE_OPTIONS.map((lt) => {
+                      const isSelected = (growthData.existingLoanType || 'no') === lt.key;
+                      return (
+                        <button
+                          key={lt.key}
+                          type="button"
+                          onClick={() => setGrowthData({ ...growthData, existingLoanType: lt.key })}
+                          className={`p-3.5 rounded-xl border text-xs font-semibold transition text-left flex items-center justify-between ${
+                            isSelected
+                              ? 'bg-[#1f3a5f] text-white border-[#1f3a5f] shadow-sm'
+                              : 'bg-[#faf6ee] text-[#5b4636] border-[#e4d9c7] hover:bg-[#efe6d6]'
+                          }`}
+                        >
+                          <span>{opt(lt)}</span>
+                          {isSelected && <span className="text-[#e8a33d] font-bold">✓</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </Field>
+              </div>
+
+              {/* Q4: Loan purpose if received */}
+              <div className="pt-4 border-t border-[#e4d9c7]">
+                <Field label={t("qLoanPurpose")}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                    {LOAN_PURPOSE_OPTIONS.map((lp) => {
+                      const isSelected = (growthData.loanPurpose || []).includes(lp.key);
+                      return (
+                        <button
+                          key={lp.key}
+                          type="button"
+                          onClick={() =>
+                            toggle(
+                              growthData.loanPurpose || [],
+                              lp.key,
+                              (newList) => setGrowthData({ ...growthData, loanPurpose: newList })
+                            )
+                          }
+                          className={`p-3.5 rounded-xl border text-xs font-semibold transition text-left flex items-center justify-between ${
+                            isSelected
+                              ? 'bg-[#1f3a5f] text-white border-[#1f3a5f] shadow-sm'
+                              : 'bg-[#faf6ee] text-[#5b4636] border-[#e4d9c7] hover:bg-[#efe6d6]'
+                          }`}
+                        >
+                          <span>{opt(lp)}</span>
                           {isSelected && <span className="text-[#e8a33d] font-bold ml-1">✓</span>}
                         </button>
                       );

@@ -210,23 +210,105 @@ export const T = {
   selectAndProceed: { en: "Select & Proceed", hi: "चुनें और आगे बढ़ें" },
   activeJourney: { en: "Active Journey", hi: "सक्रिय यात्रा" },
 
-  // Beginner Questionnaire Flow
-  secDiscovery: { en: "Business Discovery", hi: "व्यवसाय खोज" },
-  discoveryStep1: { en: "Your Interest & Idea", hi: "आपकी रुचि और विचार" },
-  discoveryStep2: { en: "Skills & Resources", hi: "हुनर और उपलब्ध साधन" },
-  discoveryStep3: { en: "Capital & Space", hi: "प्रारंभिक पूंजी व जगह" },
-  discoveryStep4: { en: "Barriers & Location", hi: "बाधाएं और स्थान" },
-  qBeginnerInterest: { en: "What kind of work or business are you interested in?", hi: "आप किस तरह का काम या व्यवसाय करने में रुचि रखते हैं?" },
-  qBeginnerSkills: { en: "What tools, machinery, or skills do you already have?", hi: "आपके पास पहले से क्या हुनर, औजार या मशीनरी है?" },
-  qBeginnerCapital: { en: "How much initial starting capital can you arrange?", hi: "आप शुरुआत में लगभग कितनी पूंजी लगा सकते हैं?" },
-  qBeginnerSpace: { en: "Where do you plan to start operating from?", hi: "आप शुरुआत में काम कहाँ से शुरू करना चाहते हैं?" },
-  qBeginnerTime: { en: "How much daily time can you commit?", hi: "आप प्रतिदिन कितना समय दे सकते हैं?" },
-  qBeginnerBarrier: { en: "What is your biggest barrier or hesitation in starting?", hi: "शुरू करने में आपकी सबसे बड़ी रुकावट या चिंता क्या है?" },
+  // Portal A — "Shuruaat" Questionnaire Sections
+  secA1: { en: "Interest & Direction", hi: "रुचि और दिशा" },
+  secA2: { en: "Resources & Skills", hi: "हुनर और साधन" },
+  secA3: { en: "Capital & Time", hi: "पूंजी और समय" },
+  secA4: { en: "Local Context & Demand", hi: "स्थानीय बाजार व मांग" },
+  secA5: { en: "Barriers & Support", hi: "बाधाएं और पारिवारिक समर्थन" },
 
-  // Existing Business Growth Additions
-  qGrowthAspiration: { en: "What is your primary goal for the next 12 months?", hi: "अगले 12 महीनों के लिए आपका मुख्य लक्ष्य क्या है?" },
-  qGrowthBarriers: { en: "What is the biggest factor blocking your growth?", hi: "आपके व्यापार के विस्तार में सबसे बड़ी बाधा क्या है?" },
-  qCreditHistory: { en: "Do you have any existing loan or borrowing record?", hi: "क्या आपका कोई पिछला लोन या उधार का रिकॉर्ड है?" },
+  // Section A1 Questions
+  qKnowsIdea: {
+    en: "Do you already know which business you want to start?",
+    hi: "क्या आप जानते हैं कि कौन सा व्यवसाय करना चाहते हैं?",
+  },
+  optKnowsYes: { en: "Yes, I have an idea", hi: "हाँ, मेरे पास विचार है" },
+  optKnowsNo: { en: "No, suggest me", hi: "नहीं, मुझे सुझाव दें" },
+  qIdeaCategory: { en: "What category of business?", hi: "किस प्रकार का व्यवसाय करना चाहते हैं?" },
+  qEnjoyDoing: {
+    en: "What are you good at or enjoy doing most?",
+    hi: "आप क्या काम करने में अच्छे हैं या आपको क्या पसंद है?",
+  },
+
+  // Section A2 Questions
+  qTradeTraining: {
+    en: "Do you have any skill or training certificate in a trade?",
+    hi: "क्या आपके पास किसी काम का हुनर या प्रशिक्षण प्रमाण पत्र है?",
+  },
+  qTradeTrainingSpecify: {
+    en: "If yes, specify certificate/trade (e.g. ITI, PMKVY, Tailoring, Electrical)",
+    hi: "यदि हाँ, तो विवरण दें (उदा. आईटीआई, सिलाई डिप्लोमा, इलेक्ट्रीशियन)",
+  },
+  qToolsOwned: {
+    en: "Do you already own any tools, machinery, or vehicle usable for business?",
+    hi: "क्या आपके पास कोई मशीन, औजार या वाहन पहले से उपलब्ध है?",
+  },
+  qSpaceAvailable: {
+    en: "Do you have any land or workspace available?",
+    hi: "क्या आपके पास कोई दुकान, कमरा या कार्यक्षेत्र उपलब्ध है?",
+  },
+
+  // Section A3 Questions
+  qCapitalRange: {
+    en: "How much starting capital can you arrange?",
+    hi: "शुरुआत करने के लिए आप कितनी पूंजी की व्यवस्था कर सकते हैं?",
+  },
+  qCapitalSource: {
+    en: "Where would this starting capital come from?",
+    hi: "यह शुरुआती पूंजी कहाँ से आएगी?",
+  },
+  qDailyTime: {
+    en: "How much daily time can you commit?",
+    hi: "आप प्रतिदिन कितना समय दे सकते हैं?",
+  },
+
+  // Section A4 Questions
+  qLocation: { en: "Where is this business located?", hi: "व्यवसाय का स्थान चुनें" },
+  qNearbyBusinesses: {
+    en: "What businesses already exist nearby in your area?",
+    hi: "आपके इलाके में आस-पास पहले से कौन से व्यवसाय चल रहे हैं?",
+  },
+  qNearbyAutoFetched: {
+    en: "Auto-detected nearby businesses (tap to edit/add):",
+    hi: "आस-पास मिले व्यवसाय (जोड़ने या हटाने के लिए दबाएं):",
+  },
+  qUnmetNeed: {
+    en: "Is there anything people in your area need but can't easily find locally?",
+    hi: "क्या कोई ऐसी वस्तु या सेवा है जिसकी मांग है पर स्थानीय बाजार में नहीं मिलती?",
+  },
+  qUnmetNeedPlaceholder: {
+    en: "e.g. Fresh paneer, organic vegetables, fast phone repair, ladies tailor...",
+    hi: "उदा. शुद्ध पनीर, लेडीज टेलर, जैविक सब्जियां, त्वरित मोबाइल रिपेयर...",
+  },
+
+  // Section A5 Questions
+  qBarriers: {
+    en: "What is the biggest thing stopping you from starting?",
+    hi: "शुरुआत करने में आपकी सबसे बड़ी रुकावट या डर क्या है?",
+  },
+  qFamilySupport: {
+    en: "Does your family support this business idea?",
+    hi: "क्या आपका परिवार इस व्यवसाय के पक्ष में है?",
+  },
+
+  // Portal B — Section G Growth Readiness
+  secG: { en: "Growth Readiness", hi: "व्यवसाय विस्तार की तैयारी" },
+  qGrowthIntent: {
+    en: "Do you want to grow & expand your business or keep it stable as is?",
+    hi: "आप अपना व्यवसाय बढ़ाना चाहते हैं या जैसा है वैसा ही स्थिर रखना चाहते हैं?",
+  },
+  qGrowthBlocker: {
+    en: "What is blocking your business growth the most?",
+    hi: "आपके व्यवसाय को आगे बढ़ाने में सबसे बड़ी बाधा क्या है?",
+  },
+  qExistingLoanType: {
+    en: "Have you taken any business loan before?",
+    hi: "क्या आपने पहले कभी कोई व्यवसाय ऋण लिया है?",
+  },
+  qLoanPurpose: {
+    en: "If you got a loan today, what would you use it for?",
+    hi: "यदि आज आपको ऋण मिले, तो आप उसका मुख्य उपयोग किसमें करेंगे?",
+  },
 
   // Beginner Dashboard ("Shuruaat")
   dashBeginnerHi: { en: "Your Business Launchpad & Action Plan", hi: "आपका नया व्यापार रोडमैप व मार्गदर्शन" },
@@ -243,60 +325,105 @@ export const T = {
   stepOfRoadmap: { en: "Step", hi: "चरण" },
 };
 
-export const BEGINNER_INTEREST_OPTIONS = [
-  { key: "kirana", en: "Daily Grocery / Kirana Store", hi: "किराना व दैनिक सामान दुकान" },
-  { key: "food", en: "Tea Stall / Snacks & Breakfast", hi: "चाय स्टॉल / नाश्ता व खानपान" },
-  { key: "tailoring", en: "Custom Tailoring & Boutique", hi: "सिलाई, सूट-ब्लाउज व बुटीक" },
-  { key: "repair", en: "Mobile Accessories & Repair", hi: "मोबाइल एक्सेसरीज़ व मरम्मत" },
-  { key: "dairy", en: "Dairy Products & Agro Hub", hi: "शुद्ध डेयरी व कृषि उत्पाद बिक्री" },
-  { key: "artisan", en: "Handicraft, Woodwork & Artisan", hi: "हस्तशिल्प, लकड़ी व शिल्पकारी" },
-  { key: "suggest", en: "Suggest for me based on local demand", hi: "स्थानीय मांग अनुसार मुझे सुझाव दें" },
+export const BEGINNER_CATEGORY_OPTIONS = [
+  { key: "food", en: "Food / Snacks (Tea, sweets, fast food)", hi: "खानपान / नाश्ता (चाय, स्नैक्स, फास्ट फूड)" },
+  { key: "clothing", en: "Clothing & Tailoring (Boutique, uniforms)", hi: "वस्त्र व सिलाई (बुटीक, लेडीज सूट, ड्रेस)" },
+  { key: "retail", en: "Retail & Kirana (Grocery, daily essentials)", hi: "किराना व दैनिक सामान (दुकान, जनरल स्टोर)" },
+  { key: "handicraft", en: "Handicrafts & Art (Pottery, woodwork, decor)", hi: "हस्तशिल्प व कारीगरी (मिट्टी, काष्ठ, सजावटी सामान)" },
+  { key: "service", en: "Services (Repair, salon, servicing)", hi: "सेवाएं (मरम्मत, सैलून, गाड़ी सर्विस)" },
+  { key: "farming", en: "Farming & Dairy (Pure milk, paneer, agro)", hi: "कृषि व डेयरी उत्पाद (दूध, पनीर, जैविक उत्पाद)" },
+  { key: "other", en: "Other Trade or Retail", hi: "अन्य व्यवसाय या व्यापार" },
 ];
 
-export const CAPITAL_RANGE_OPTIONS = [
-  { key: "under_10k", en: "Under ₹10,000 (Micro-budget)", hi: "₹10,000 से कम (अति-लघु बजट)" },
-  { key: "10k_50k", en: "₹10,000 to ₹50,000 (Small venture)", hi: "₹10,000 से ₹50,000 (छोटा व्यवसाय)" },
-  { key: "50k_2lakh", en: "₹50,000 to ₹2 Lakhs (Moderate)", hi: "₹50,000 से ₹2 लाख (मध्यम)" },
-  { key: "2lakh_5lakh", en: "₹2 Lakhs to ₹5 Lakhs (Full unit)", hi: "₹2 लाख से ₹5 लाख (पूर्ण इकाई)" },
-  { key: "loan_needed", en: "Need 100% government bank loan", hi: "100% सरकारी बैंक लोन की आवश्यकता" },
+export const BEGINNER_ENJOY_OPTIONS = [
+  { key: "cooking", en: "Cooking & food prep", hi: "खाना बनाना व चाय-नाश्ता" },
+  { key: "stitching", en: "Stitching & tailoring", hi: "सिलाई, कढ़ाई व बुटीक कार्य" },
+  { key: "driving", en: "Driving & logistics", hi: "गाड़ी चलाना व डिलीवरी" },
+  { key: "farming", en: "Farming & animal care", hi: "खेती, बागवानी व पशुपालन" },
+  { key: "selling", en: "Selling & dealing with customers", hi: "दुकानदारी व ग्राहकों से बातचीत" },
+  { key: "repairing", en: "Repairing & technical fixes", hi: "मरम्मत व बिजली/इलेक्ट्रॉनिक काम" },
+  { key: "craft", en: "Art, woodwork & handcraft", hi: "हस्तशिल्प, लकड़ी व कलाकृति" },
 ];
 
-export const SPACE_TYPE_OPTIONS = [
-  { key: "home", en: "Home-based / From residence", hi: "घर से / आवासीय स्थान" },
-  { key: "rented_shop", en: "Rented commercial shop in market", hi: "बाजार में किराए की दुकान" },
-  { key: "mobile_cart", en: "Mobile cart / Portable street stall", hi: "ठेला / फेरी / पोर्टेबल स्टॉल" },
+export const BEGINNER_TOOLS_OPTIONS = [
+  { key: "sewing", en: "Sewing machine", hi: "सिलाई मशीन" },
+  { key: "vehicle", en: "Vehicle (Bike, auto, cart)", hi: "वाहन (बाइक, ऑटो, ठेला)" },
+  { key: "space", en: "Shop space / Vacant room", hi: "दुकान या खाली कमरा" },
+  { key: "kitchen", en: "Kitchen utensils & gas stove", hi: "रसोई के बर्तन व चूल्हा" },
+  { key: "tools", en: "Hand tools / toolkit", hi: "हाथ के औजार / टूलकिट" },
+  { key: "none", en: "None currently", hi: "फिलहाल कोई नहीं" },
 ];
 
-export const TIME_COMMITMENT_OPTIONS = [
+export const BEGINNER_SPACE_OPTIONS = [
+  { key: "own_shop", en: "Own shop or commercial space", hi: "अपनी खुद की दुकान या जगह" },
+  { key: "home", en: "Available space at home", hi: "घर पर ही उपलब्ध जगह" },
+  { key: "rent", en: "No space, need to rent / stall", hi: "कोई जगह नहीं, किराए पर या स्टॉल लेंगे" },
+];
+
+export const BEGINNER_CAPITAL_OPTIONS = [
+  { key: "under_5k", en: "Less than ₹5,000", hi: "₹5,000 से कम" },
+  { key: "5k_25k", en: "₹5,000 to ₹25,000", hi: "₹5,000 से ₹25,000" },
+  { key: "25k_1lakh", en: "₹25,000 to ₹1,00,000", hi: "₹25,000 से ₹1,00,000" },
+  { key: "1lakh_plus", en: "₹1,00,000 and above", hi: "₹1,00,000 से अधिक" },
+];
+
+export const BEGINNER_CAPITAL_SOURCE_OPTIONS = [
+  { key: "savings", en: "Personal savings", hi: "व्यक्तिगत बचत" },
+  { key: "family", en: "Family & relatives support", hi: "परिवार या रिश्तेदारों से सहायता" },
+  { key: "loan", en: "Want a bank or govt loan", hi: "बैंक या सरकारी ऋण की आवश्यकता" },
+  { key: "dont_know", en: "Don't know yet / Need guidance", hi: "अभी तय नहीं है / मार्गदर्शन चाहिए" },
+];
+
+export const BEGINNER_TIME_OPTIONS = [
   { key: "full_time", en: "Full-time (8-10 hours/day)", hi: "पूर्णकालिक (8-10 घंटे/दिन)" },
-  { key: "part_time", en: "Part-time (3-4 hours/day)", hi: "अंशकालिक (3-4 घंटे/दिन)" },
+  { key: "part_time", en: "Part-time (few hours daily)", hi: "अंशकालिक (प्रतिदिन 3-4 घंटे)" },
+  { key: "not_sure", en: "Not sure yet", hi: "अभी निश्चित नहीं" },
 ];
 
 export const BEGINNER_BARRIER_OPTIONS = [
-  { key: "money", en: "Lack of starting funds / capital", hi: "शुरुआती पूंजी की कमी" },
-  { key: "knowledge", en: "Lack of business knowledge / guidance", hi: "व्यापार की जानकारी व मार्गदर्शन की कमी" },
-  { key: "confidence", en: "Fear of loss / hesitation", hi: "नुकसान का डर / झिझक" },
-  { key: "customers", en: "Unsure how to find customers", hi: "ग्राहक कैसे मिलेंगे इसकी अनिश्चितता" },
-  { key: "space", en: "No suitable space or shop", hi: "उचित स्थान या दुकान का अभाव" },
+  { key: "lack_money", en: "Lack of money / starting capital", hi: "शुरुआती पूंजी की कमी" },
+  { key: "lack_knowledge", en: "Lack of knowledge / business steps", hi: "व्यापार की जानकारी व मार्गदर्शन की कमी" },
+  { key: "no_space", en: "No proper space or shop", hi: "उचित स्थान या दुकान का अभाव" },
+  { key: "family_support", en: "Family not supporting yet", hi: "परिवार का समर्थन न होना" },
+  { key: "fear_failure", en: "Fear of business failure or loss", hi: "नुकसान या असफलता का डर" },
+  { key: "just_havent_started", en: "Nothing, just haven't started", hi: "कोई बड़ी रुकावट नहीं, बस शुरुआत करनी है" },
 ];
 
-export const GROWTH_ASPIRATION_OPTIONS = [
-  { key: "scale", en: "Scale & expand to new products/branches", hi: "विस्तार करना व नए उत्पाद जोड़ना" },
-  { key: "stable", en: "Keep steady & improve profit margin", hi: "मौजूदा स्थिति में मुनाफा और बचत सुधारना" },
+export const BEGINNER_FAMILY_SUPPORT_OPTIONS = [
+  { key: "yes", en: "Yes, fully supportive", hi: "हाँ, पूरा समर्थन है" },
+  { key: "no", en: "No, they have doubts", hi: "नहीं, उन्हें आशंका है" },
+  { key: "not_discussed", en: "Not discussed yet", hi: "अभी चर्चा नहीं की है" },
 ];
 
-export const GROWTH_BARRIER_OPTIONS = [
-  { key: "capital", en: "Shortage of expansion capital / loans", hi: "विस्तार हेतु पूंजी / लोन की कमी" },
-  { key: "staff", en: "Shortage of skilled workers/helpers", hi: "कुशल कारीगरों या सहायकों की कमी" },
-  { key: "demand", en: "Limited local customer demand", hi: "स्थानीय बाजार में सीमित मांग" },
-  { key: "competition", en: "Intense local price competition", hi: "आस-पास की कड़ी प्रतिस्पर्धा" },
-  { key: "seasonal", en: "Severe seasonal drop in sales", hi: "मौसमी मंदी के कारण बिक्री घटना" },
+export const GROWTH_INTENT_OPTIONS = [
+  { key: "grow", en: "Grow & Expand business", hi: "विस्तार करना चाहते हैं (बढ़ाना है)" },
+  { key: "stable", en: "Stay Stable as is", hi: "जैसा है वैसा ही स्थिर रखना है" },
+  { key: "not_sure", en: "Not Sure Yet", hi: "अभी निश्चित नहीं" },
 ];
 
-export const CREDIT_HISTORY_OPTIONS = [
-  { key: "none", en: "No active loans (Clean slate)", hi: "कोई चालू लोन नहीं (साफ रिकॉर्ड)" },
-  { key: "formal", en: "Regular bank loan / KCC (Timely paid)", hi: "सरकारी बैंक लोन / केसीसी (नियमित भुगतान)" },
-  { key: "informal", en: "Informal loan from moneylender/relatives", hi: "साहूकार या रिश्तेदारों से लिया उधार" },
+export const GROWTH_BLOCKER_OPTIONS = [
+  { key: "capital", en: "Not enough capital", hi: "पूंजी की कमी" },
+  { key: "customers", en: "Not enough customers", hi: "पर्याप्त ग्राहक नहीं मिल रहे" },
+  { key: "competition", en: "Too much competition", hi: "आस-पास कड़ी प्रतिस्पर्धा" },
+  { key: "staff", en: "Staff / labor shortage", hi: "कर्मचारियों / मजदूरों की कमी" },
+  { key: "seasonal", en: "Seasonal demand drop", hi: "मौसमी मंदी" },
+  { key: "knowledge", en: "Don't know how to expand", hi: "विस्तार का तरीका समझ नहीं आ रहा" },
+];
+
+export const EXISTING_LOAN_TYPE_OPTIONS = [
+  { key: "no", en: "No loan taken before", hi: "नहीं, कभी कोई लोन नहीं लिया" },
+  { key: "bank", en: "Yes - bank loan", hi: "हाँ - बैंक से लोन लिया है" },
+  { key: "informal", en: "Yes - informal lender (sahukar)", hi: "हाँ - साहूकार / परिचित से लिया है" },
+  { key: "govt", en: "Yes - govt scheme loan", hi: "हाँ - सरकारी योजना से लिया है" },
+];
+
+export const LOAN_PURPOSE_OPTIONS = [
+  { key: "stock", en: "Buy more stock / inventory", hi: "दुकान में अधिक माल/स्टॉक भरना" },
+  { key: "equipment", en: "Buy equipment & machinery", hi: "मशीन या औजार खरीदना" },
+  { key: "staff", en: "Hire staff / helpers", hi: "कर्मचारी / सहायक रखना" },
+  { key: "expand_shop", en: "Expand shop premises", hi: "दुकान का विस्तार या नवीनीकरण" },
+  { key: "marketing", en: "Marketing & publicity", hi: "प्रचार व बोर्ड लगवाना" },
+  { key: "other", en: "Other business needs", hi: "अन्य व्यावसायिक आवश्यकताएं" },
 ];
 
 export const EXPENSE_FIELDS = [

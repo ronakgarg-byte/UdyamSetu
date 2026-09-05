@@ -154,6 +154,35 @@ describe('CRUD Endpoints Integration Tests', () => {
     assert.strictEqual(data.items[0].desc, 'Mustard Oil (1L)');
   });
 
+  test('POST /api/profile/:userId - should save Section G growth readiness fields', async () => {
+    const res = await fetch(`${baseUrl}/profile/${createdUserId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customers: ['farmers', 'workers'],
+        competition: { count: 2, where: 'Across the lane' },
+        problems: ['workingcap'],
+        growth_intent: 'grow',
+        growth_blocker: ['capital', 'customers'],
+        existing_loan_type: 'bank',
+        loan_purpose: ['stock', 'equipment'],
+      }),
+    });
+
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.strictEqual(data.profile.growth_intent, 'grow');
+    assert.strictEqual(data.profile.existing_loan_type, 'bank');
+    assert.ok(data.profile.growth_blocker.includes('capital'));
+    assert.ok(data.profile.loan_purpose.includes('stock'));
+
+    const getRes = await fetch(`${baseUrl}/profile/${createdUserId}`);
+    const getData = await getRes.json();
+    assert.strictEqual(getData.profile.growth_intent, 'grow');
+    assert.strictEqual(getData.profile.existing_loan_type, 'bank');
+  });
+
   test('GET /api/summary/:userId - should return aggregated user data', async () => {
     const res = await fetch(`${baseUrl}/summary/${createdUserId}`);
     assert.strictEqual(res.status, 200);

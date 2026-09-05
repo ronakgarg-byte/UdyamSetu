@@ -298,7 +298,317 @@ function matchSchemes(user = {}, business = {}, financial = {}, problems = [], l
   return evaluatedSchemes;
 }
 
+/**
+ * Lightweight Beginner Idea Recommendation & Starter Roadmap Engine
+ * Dedicated for Portal A ("Shuruaat" - Aspiring Entrepreneurs)
+ */
+function getBeginnerRecommendation(user = {}, business = {}, problems = [], localContext = {}) {
+  const knowsIdea = String(business.knows_idea || business.knowsIdea || '').toLowerCase();
+  const category = (business.idea_category || business.ideaCategory || '').toLowerCase();
+  const enjoyDoing = (Array.isArray(business.enjoy_doing || business.enjoyDoing)
+    ? (business.enjoy_doing || business.enjoyDoing).join(' ')
+    : String(business.enjoy_doing || business.enjoyDoing || business.skills || '')).toLowerCase();
+  const toolsOwned = (Array.isArray(business.tools_owned || business.toolsOwned)
+    ? (business.tools_owned || business.toolsOwned).join(' ')
+    : String(business.tools_owned || business.toolsOwned || '')).toLowerCase();
+  const spaceAvailable = business.space_available || business.spaceAvailable || business.space_type || business.spaceType || 'home';
+  const capitalRange = business.capital_range || business.capitalRange || '5k_25k';
+  const capitalSource = business.capital_source || business.capitalSource || 'savings';
+  const timeCommitment = business.time_commitment || business.timeCommitment || 'full_time';
+  const unmetNeed = business.unmet_need || business.unmetNeed || '';
+  const userGender = (user.gender || '').toLowerCase();
+  const district = user.district || business.district || 'Varanasi';
+
+  // 1. Determine Recommended Business Idea
+  let ideaKey = 'retail';
+  let ideaTitle_en = 'Regional Daily Essentials & Kirana Store';
+  let ideaTitle_hi = 'क्षेत्रीय दैनिक सामान व मिनी किराना दुकान';
+  let ideaCategory_en = 'Retail & Daily Kirana';
+  let ideaCategory_hi = 'खुदरा व दैनिक किराना';
+  let ideaDesc_en = 'Fast-moving daily grocery, spices, and packaged foods with consistent local footfall and daily cash turnaround.';
+  let ideaDesc_hi = 'स्थानीय ग्राहकों के लिए रोजमर्रा का राशन, मसाले और घरेलू सामान, जिसमें नियमित दैनिक नकद आय और स्थिर मांग रहती है।';
+  let initialStockCost = 15000;
+  let equipmentCost = 8000;
+  let estimatedMonthlyProfit = '₹16,000 – ₹26,000';
+  let breakEvenTimeline_en = '2 to 3 Months';
+  let breakEvenTimeline_hi = '2 से 3 महीने';
+
+  if (category.includes('food') || enjoyDoing.includes('cook') || toolsOwned.includes('kitchen') || category.includes('snack')) {
+    ideaKey = 'food';
+    ideaTitle_en = 'Street Food & Beverage Stall';
+    ideaTitle_hi = 'चाय, नाश्ता व फ़ास्ट फ़ूड कॉर्नर';
+    ideaCategory_en = 'Food & Refreshments';
+    ideaCategory_hi = 'खानपान व जलपान';
+    ideaDesc_en = 'Fresh tea, breakfast snacks, and evening street food catering to daily commuters, local markets, and workers.';
+    ideaDesc_hi = 'दैनिक यात्रियों, बाजार के ग्राहकों और मजदूरों के लिए ताज़ा चाय, सुबह का नाश्ता और शाम के स्नैक्स का केंद्र।';
+    initialStockCost = 6000;
+    equipmentCost = 9000;
+    estimatedMonthlyProfit = '₹18,000 – ₹30,000';
+    breakEvenTimeline_en = '1 to 2 Months';
+    breakEvenTimeline_hi = '1 से 2 महीने';
+  } else if (category.includes('cloth') || category.includes('tailor') || enjoyDoing.includes('stitch') || toolsOwned.includes('sewing')) {
+    ideaKey = 'tailoring';
+    ideaTitle_en = 'Custom Tailoring, Alterations & Boutique Studio';
+    ideaTitle_hi = 'कस्टम सिलाई, ऑल्टरेशन व लेडीज बुटीक';
+    ideaCategory_en = 'Clothing & Tailoring';
+    ideaCategory_hi = 'वस्त्र व सिलाई';
+    ideaDesc_en = 'Direct-labor tailoring and garment alterations for suits, uniforms, and blouses with zero inventory wastage.';
+    ideaDesc_hi = 'सूट, ब्लाउज, यूनिफॉर्म सिलाई और कपड़ों की मरम्मत सेवा, जिसमें बिना किसी माल बर्बादी के सीधा श्रम मुनाफा मिलता है।';
+    initialStockCost = 7000;
+    equipmentCost = 12000;
+    estimatedMonthlyProfit = '₹15,000 – ₹28,000';
+    breakEvenTimeline_en = '2 Months';
+    breakEvenTimeline_hi = '2 महीने';
+  } else if (category.includes('handicraft') || category.includes('artisan') || enjoyDoing.includes('craft') || enjoyDoing.includes('art')) {
+    ideaKey = 'artisan';
+    ideaTitle_en = 'Handmade Crafts & Traditional Artisan Workshop';
+    ideaTitle_hi = 'पारंपरिक हस्तशिल्प व काष्ठ कला कार्यशाला';
+    ideaCategory_en = 'Handicrafts & Art';
+    ideaCategory_hi = 'हस्तशिल्प व कारीगरी';
+    ideaDesc_en = 'Artisan-crafted home decor, embroidery, and cultural goods eligible for PM Vishwakarma 5% credit and toolkit grants.';
+    ideaDesc_hi = 'पीएम विश्वकर्मा योजना के तहत ₹15,000 की टूलकिट और 5% सस्ते ऋण के साथ पारंपरिक हस्तशिल्प और उत्पाद निर्माण।';
+    initialStockCost = 10000;
+    equipmentCost = 15000;
+    estimatedMonthlyProfit = '₹17,000 – ₹32,000';
+    breakEvenTimeline_en = '2 to 3 Months';
+    breakEvenTimeline_hi = '2 से 3 महीने';
+  } else if (category.includes('service') || category.includes('repair') || enjoyDoing.includes('repair') || enjoyDoing.includes('drive')) {
+    ideaKey = 'repair';
+    ideaTitle_en = 'Mobile Accessories & Electronics Quick Repair Center';
+    ideaTitle_hi = 'मोबाइल एक्सेसरीज़ व इलेक्ट्रॉनिक मरम्मत केंद्र';
+    ideaCategory_en = 'Services & Repairs';
+    ideaCategory_hi = 'सेवाएं व मरम्मत';
+    ideaDesc_en = 'Fast-turnaround screen guard application, charger sales, and small electronic/appliance servicing.';
+    ideaDesc_hi = 'स्क्रीन गार्ड, चार्जर बिक्री और मोबाइल व छोटे घरेलू उपकरणों की त्वरित मरम्मत सेवा।';
+    initialStockCost = 12000;
+    equipmentCost = 14000;
+    estimatedMonthlyProfit = '₹20,000 – ₹35,000';
+    breakEvenTimeline_en = '2 Months';
+    breakEvenTimeline_hi = '2 महीने';
+  } else if (category.includes('farm') || category.includes('dairy') || enjoyDoing.includes('farm')) {
+    ideaKey = 'dairy';
+    ideaTitle_en = 'Dairy Value-Addition & Pure Milk Products Hub';
+    ideaTitle_hi = 'शुद्ध डेयरी उत्पाद, पनीर व दुग्ध केंद्र';
+    ideaCategory_en = 'Farming & Dairy';
+    ideaCategory_hi = 'कृषि व डेयरी';
+    ideaDesc_en = 'Processing milk into high-margin paneer, curd, and sweets with direct local supply.';
+    ideaDesc_hi = 'ताजे दूध से उच्च मुनाफे वाले पनीर, दही, छाछ और शुद्ध घी तैयार कर सीधे स्थानीय बाजार में आपूर्ति।';
+    initialStockCost = 12000;
+    equipmentCost = 16000;
+    estimatedMonthlyProfit = '₹22,000 – ₹38,000';
+    breakEvenTimeline_en = '2 Months';
+    breakEvenTimeline_hi = '2 महीने';
+  }
+
+  // Adjust budget by capital range
+  if (capitalRange === 'under_5k' || capitalRange === 'under_10k') {
+    initialStockCost = Math.min(initialStockCost, 4000);
+    equipmentCost = Math.min(equipmentCost, 3000);
+  } else if (capitalRange === '5k_25k') {
+    initialStockCost = Math.min(initialStockCost, 12000);
+    equipmentCost = Math.min(equipmentCost, 8000);
+  } else if (capitalRange === '25k_1lakh' || capitalRange === '50k_2lakh') {
+    initialStockCost = Math.round(initialStockCost * 2.0);
+    equipmentCost = Math.round(equipmentCost * 1.6);
+  } else if (capitalRange === '1lakh_plus' || capitalRange === '2lakh_5lakh') {
+    initialStockCost = Math.round(initialStockCost * 4.0);
+    equipmentCost = Math.round(equipmentCost * 3.0);
+  }
+
+  const totalStartupBudget = initialStockCost + equipmentCost;
+
+  // 2. 5-Step Starter Plan Steps
+  const starterSteps = [
+    {
+      step: 1,
+      title: 'Zero-Cost MSME Registration (Udyam)',
+      title_en: 'Zero-Cost MSME Registration (Udyam)',
+      title_hi: 'निःशुल्क सरकारी उद्यम पंजीकरण',
+      desc: 'Obtain your official 12-digit Udyam number in 10 minutes using Aadhaar for collateral-free bank loans & subsidies.',
+      desc_en: 'Obtain your official 12-digit Udyam number in 10 minutes using Aadhaar for collateral-free bank loans & subsidies.',
+      desc_hi: 'आधार कार्ड द्वारा 10 मिनट में आधिकारिक 12-अंकों का उद्यम नंबर प्राप्त करें, जिससे बिना गारंटी बैंक लोन व सब्सिडी मिलती है।',
+      linkText: 'Udyam Registration Portal ↗',
+      url: 'https://udyamregistration.gov.in/',
+      badge: 'Mandatory • 100% Free',
+    },
+    {
+      step: 2,
+      title: 'Direct Wholesale Sourcing via AGMARKNET',
+      title_en: 'Direct Wholesale Sourcing via AGMARKNET',
+      title_hi: 'AGMARKNET थोक APMC मंडी से सस्ता कच्चा माल',
+      desc: 'Check daily wholesale modal rates to purchase initial inventory directly from the mandi yard, saving 15-30% middleman margins.',
+      desc_en: 'Check daily wholesale modal rates to purchase initial inventory directly from the mandi yard, saving 15-30% middleman margins.',
+      desc_hi: 'दैनिक थोक मंडी भाव देखकर सीधे मुख्य मंडी या थोक मंडी से नकद में सामान खरीदें, जिससे 15-30% की सीधी बचत होगी।',
+      linkText: 'Check Live Mandi Prices',
+      action: 'view_mandi',
+      badge: '15-30% Savings',
+    },
+    {
+      step: 3,
+      title: 'Apply for Starter Capital Subsidy or Mudra Loan',
+      title_en: 'Apply for Starter Capital Subsidy or Mudra Loan',
+      title_hi: 'सरकारी पूंजीगत सब्सिडी या मुद्रा ऋण हेतु आवेदन',
+      desc: capitalRange === 'under_5k' || capitalRange === '5k_25k' || capitalSource === 'loan'
+        ? 'Apply for PM Mudra Yojana (Shishu) for up to ₹50,000 micro-credit with no collateral and nominal bank interest.'
+        : 'Apply on PMEGP portal for 25% to 35% capital subsidy grant on project costs up to ₹50 Lakhs.',
+      desc_en: capitalRange === 'under_5k' || capitalRange === '5k_25k' || capitalSource === 'loan'
+        ? 'Apply for PM Mudra Yojana (Shishu) for up to ₹50,000 micro-credit with no collateral and nominal bank interest.'
+        : 'Apply on PMEGP portal for 25% to 35% capital subsidy grant on project costs up to ₹50 Lakhs.',
+      desc_hi: capitalRange === 'under_5k' || capitalRange === '5k_25k' || capitalSource === 'loan'
+        ? 'बिना किसी गारंटी के ₹50,000 तक के सूक्ष्म ऋण के लिए प्रधानमंत्री मुद्रा (शिशु) में आवेदन करें।'
+        : 'परियोजना लागत पर 25-35% सरकारी सब्सिडी (माफ होने वाली पूंजी) के लिए पीएमईजीपी पोर्टल पर आवेदन करें।',
+      linkText: 'Apply on Portal ↗',
+      url: capitalRange === 'under_5k' || capitalRange === '5k_25k' || capitalSource === 'loan'
+        ? 'https://www.mudra.org.in/'
+        : 'https://www.kviconline.gov.in/pmegpeportal/',
+      badge: 'Govt Backed',
+    },
+    {
+      step: 4,
+      title: spaceAvailable === 'home' ? 'Set Up Low-Cost Home / Stall Space' : 'Lock Affordable Commercial / Market Location',
+      title_en: spaceAvailable === 'home' ? 'Set Up Low-Cost Home / Stall Space' : 'Lock Affordable Commercial / Market Location',
+      title_hi: spaceAvailable === 'home' ? 'कम लागत में घरेलू कार्यक्षेत्र या स्टॉल की तैयारी' : 'उचित स्थान पर दुकान व रैक की व्यवस्था',
+      desc: spaceAvailable === 'home'
+        ? 'Keep fixed overheads at ₹0 during the initial 60 days by utilizing home space or portable display counters.'
+        : 'Ensure high footfall near bus stands, school gates, or crossroads while negotiating minimum advance security deposit.',
+      desc_en: spaceAvailable === 'home'
+        ? 'Keep fixed overheads at ₹0 during the initial 60 days by utilizing home space or portable display counters.'
+        : 'Ensure high footfall near bus stands, school gates, or crossroads while negotiating minimum advance security deposit.',
+      desc_hi: spaceAvailable === 'home'
+        ? 'शुरुआती 60 दिनों में दुकान किराए का खर्च शून्य रखें और घर के कमरे या पोर्टेबल काउंटर से शुरुआत करें।'
+        : 'बस स्टैंड, स्कूल या मुख्य चौराहे के पास अधिक आवाजाही वाली जगह चुनें और कम से कम एडवांस देकर शुरुआत करें।',
+      badge: 'Low Overhead',
+    },
+    {
+      step: 5,
+      title: 'Acquire First 25 Core Customers',
+      title_en: 'Acquire First 25 Core Customers',
+      title_hi: 'पहले 25 पक्के स्थानीय ग्राहक जोड़ें',
+      desc: 'Offer opening introductory discounts to neighbors, family friends, and local shopkeepers with a simple WhatsApp broadcast list.',
+      desc_en: 'Offer opening introductory discounts to neighbors, family friends, and local shopkeepers with a simple WhatsApp broadcast list.',
+      desc_hi: 'शुरुआती छूट देकर पड़ोसियों, परिचितों और स्थानीय दुकानदारों को जोड़ें और एक साधारण व्हाट्सएप ब्रॉडकास्ट सूची बनाएं।',
+      badge: 'Growth Launch',
+    },
+  ];
+
+  // 3. Match Starter Schemes
+  let starterScheme = {
+    code: 'mudra_shishu',
+    name: 'Pradhan Mantri Mudra Yojana (Shishu)',
+    name_en: 'Pradhan Mantri Mudra Yojana (Shishu)',
+    name_hi: 'प्रधानमंत्री मुद्रा योजना (शिशु)',
+    ministry: 'Ministry of Finance / MSME',
+    ministry_en: 'Ministry of Finance / MSME',
+    ministry_hi: 'वित्त मंत्रालय / एमएसएमई',
+    portalUrl: 'https://www.mudra.org.in/',
+    loanCeiling: 50000,
+    interestSubsidyPct: 0.0,
+    match: 92,
+    keyBenefit: 'Collateral-free micro-credit up to ₹50,000 with quick bank disbursement for raw materials and starter setup.',
+    keyBenefit_en: 'Collateral-free micro-credit up to ₹50,000 with quick bank disbursement for raw materials and starter setup.',
+    keyBenefit_hi: 'कच्चा माल व शुरुआती सेटअप के लिए बिना गारंटी ₹50,000 तक का आसान बैंक ऋण।',
+  };
+
+  if (capitalRange === 'under_5k' || capitalRange === 'under_10k') {
+    starterScheme = {
+      code: 'pm_svanidhi',
+      name: 'PM SVANidhi Scheme',
+      name_en: 'PM SVANidhi Scheme',
+      name_hi: 'पीएम स्वनिधि योजना',
+      ministry: 'Ministry of Housing and Urban Affairs',
+      ministry_en: 'Ministry of Housing and Urban Affairs',
+      ministry_hi: 'आवासन और शहरी कार्य मंत्रालय',
+      portalUrl: 'https://pmsvanidhi.mohua.gov.in/',
+      loanCeiling: 10000,
+      interestSubsidyPct: 7.0,
+      match: 96,
+      keyBenefit: 'Collateral-free working capital starter micro-loan of ₹10,000 with 7% interest subsidy and cashback on digital transactions.',
+      keyBenefit_en: 'Collateral-free working capital starter micro-loan of ₹10,000 with 7% interest subsidy and cashback on digital transactions.',
+      keyBenefit_hi: 'बिना किसी गारंटी के ₹10,000 का प्रारंभिक कार्यशील ऋण, 7% ब्याज सब्सिडी और डिजिटल भुगतान पर कैशबैक।',
+    };
+  } else if (ideaKey === 'artisan' || toolsOwned.includes('sewing') || enjoyDoing.includes('craft') || enjoyDoing.includes('stitch')) {
+    starterScheme = {
+      code: 'pm_vishwakarma',
+      name: 'PM Vishwakarma Scheme',
+      name_en: 'PM Vishwakarma Scheme',
+      name_hi: 'पीएम विश्वकर्मा योजना',
+      ministry: 'Ministry of MSME / Skill Development',
+      ministry_en: 'Ministry of MSME / Skill Development',
+      ministry_hi: 'एमएसएमई मंत्रालय / कौशल विकास मंत्रालय',
+      portalUrl: 'https://pmvishwakarma.gov.in/',
+      loanCeiling: 300000,
+      interestSubsidyPct: 5.0,
+      match: 95,
+      keyBenefit: '5% concessional credit up to ₹3 Lakhs + ₹15,000 modern toolkit e-voucher + skill training with ₹500/day stipend.',
+      keyBenefit_en: '5% concessional credit up to ₹3 Lakhs + ₹15,000 modern toolkit e-voucher + skill training with ₹500/day stipend.',
+      keyBenefit_hi: '5% ब्याज पर ₹3 लाख तक का ऋण + ₹15,000 की निःशुल्क आधुनिक टूलकिट + ₹500/दिन वजीफे के साथ प्रशिक्षण।',
+    };
+  } else if (capitalRange === '25k_1lakh' || capitalRange === '1lakh_plus' || capitalRange === '50k_2lakh' || capitalRange === '2lakh_5lakh') {
+    starterScheme = {
+      code: 'pmegp',
+      name: "PMEGP (Prime Minister's Employment Generation Programme)",
+      name_en: "PMEGP (Prime Minister's Employment Generation Programme)",
+      name_hi: 'पीएमईजीपी (प्रधानमंत्री रोजगार सृजन कार्यक्रम)',
+      ministry: 'Ministry of MSME / KVIC',
+      ministry_en: 'Ministry of MSME / KVIC',
+      ministry_hi: 'सूक्ष्म, लघु एवं मध्यम उद्यम मंत्रालय',
+      portalUrl: 'https://www.kviconline.gov.in/pmegpeportal/',
+      loanCeiling: 5000000,
+      interestSubsidyPct: 35.0,
+      match: 89,
+      keyBenefit: 'Up to 35% capital subsidy grant (non-repayable margin money) for setting up new rural micro-enterprises.',
+      keyBenefit_en: 'Up to 35% capital subsidy grant (non-repayable margin money) for setting up new rural micro-enterprises.',
+      keyBenefit_hi: 'ग्रामीण क्षेत्रों में नई इकाइयों की स्थापना हेतु 25% से 35% तक सरकारी पूंजीगत सब्सिडी (माफ होने वाला अनुदान)।',
+    };
+  }
+
+  const matchedSchemes = matchSchemes(user, { ...business, portal_type: 'beginner', isBeginner: true }, problems, localContext);
+
+  const recommendedIdea = {
+    key: ideaKey,
+    title: ideaTitle_en,
+    title_en: ideaTitle_en,
+    title_hi: ideaTitle_hi,
+    category: ideaCategory_en,
+    category_en: ideaCategory_en,
+    category_hi: ideaCategory_hi,
+    desc: ideaDesc_en,
+    desc_en: ideaDesc_en,
+    desc_hi: ideaDesc_hi,
+    estimatedMonthlyProfit,
+    estimatedStartupCost: totalStartupBudget,
+    breakEvenTimeline: breakEvenTimeline_en,
+    breakEvenTimeline_en: breakEvenTimeline_en,
+    breakEvenTimeline_hi: breakEvenTimeline_hi,
+    matchPercentage: 94,
+  };
+
+  const budget = {
+    initialStockCost,
+    equipmentCost,
+    totalStartupBudget,
+    capitalRange,
+    capitalSource,
+  };
+
+  return {
+    isBeginner: true,
+    recommendedIdea,
+    budget,
+    starterSteps,
+    steps: starterSteps,
+    starterScheme,
+    recommendedScheme: starterScheme,
+    matchedSchemes,
+    estimatedStartupCost: totalStartupBudget,
+    projectedMonthlyProfit: estimatedMonthlyProfit,
+    unmetOpportunityNote: unmetNeed || null,
+    localDistrict: district,
+  };
+}
+
 module.exports = {
   matchSchemes,
+  getBeginnerRecommendation,
   SCHEMES_MASTER,
 };

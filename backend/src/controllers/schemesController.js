@@ -48,14 +48,11 @@ async function getMatchingSchemes(req, res) {
       req.query.portal_type === 'beginner' ||
       req.query.portalType === 'beginner';
 
-    // 1. Calculate financial metrics or beginner plan
-    const { calculateBeginnerPlan } = require('../services/financialService');
-    const financial = isBeginner
-      ? calculateBeginnerPlan(user, business, problems)
-      : calculateFinancialMetrics(sales, expenses, items, problems);
-
-    // 2. Fetch local context
+    const { getBeginnerRecommendation } = require('../services/schemeMatchingService');
     const localContext = await getAggregatedLocalContext(user.district || business.district || 'Varanasi');
+    const financial = isBeginner
+      ? getBeginnerRecommendation(user, business, problems, localContext)
+      : calculateFinancialMetrics(sales, expenses, items, problems);
 
     // 3. Match schemes
     const schemes = matchSchemes(user, business, financial, problems, localContext);
