@@ -122,64 +122,155 @@ const SCHEMES_MASTER = [
     keyBenefits_en: ['Substantial credit range ₹10 Lakh to ₹1 Crore', 'Dedicated handholding by SIDBI & Lead District Managers', 'Repayable in 7 years with up to 18 months moratorium'],
     keyBenefits_hi: ['₹10 लाख से ₹1 करोड़ तक का पर्याप्त ऋण', 'सिडबी और जिला प्रबंधकों द्वारा पूर्ण मार्गदर्शन', '18 महीने के अधिस्थगन के साथ 7 वर्षों में पुनर्भुगतान'],
   },
+  {
+    code: 'udyam_reg',
+    name_en: 'Udyam Registration Portal (Zero Cost MSME Certificate)',
+    name_hi: 'उद्यम पंजीकरण पोर्टल (निःशुल्क एमएसएमई प्रमाण पत्र)',
+    ministry_en: 'Ministry of MSME',
+    ministry_hi: 'सूक्ष्म, लघु एवं मध्यम उद्यम मंत्रालय',
+    description_en: 'Official government registration granting priority lending, collateral exemptions, and subsidy eligibility.',
+    description_hi: 'प्राथमिकता बैंक ऋण और सरकारी सब्सिडी हेतु आधिकारिक निःशुल्क एमएसएमई पंजीकरण।',
+    loanCeiling: 0,
+    interestSubsidyPct: 100.0,
+    baseScore: 92,
+    targetProblems: ['unknown', 'workingcap', 'marketing'],
+    targetGenders: ['male', 'female', 'other'],
+    portalUrl: 'https://udyamregistration.gov.in/',
+    keyBenefits_en: ['100% Free & paperless registration with Aadhaar', 'Mandatory for government subsidies & collateral waivers', 'Protection against delayed payments under MSME Act'],
+    keyBenefits_hi: ['आधार द्वारा 100% निःशुल्क व कागज-रहित पंजीकरण', 'सरकारी सब्सिडी व बिना गारंटी बैंक लोन हेतु अनिवार्य', 'एमएसएमई कानून के तहत भुगतान सुरक्षा'],
+  },
+  {
+    code: 'pmkvy',
+    name_en: 'PMKVY (Pradhan Mantri Kaushal Vikas Yojana)',
+    name_hi: 'प्रधानमंत्री कौशल विकास योजना (पीएमकेवीवाई)',
+    ministry_en: 'Ministry of Skill Development and Entrepreneurship',
+    ministry_hi: 'कौशल विकास और उद्यमिता मंत्रालय',
+    description_en: 'Free government skill training and entrepreneurship certification with cash rewards for beginners.',
+    description_hi: 'शुरुआती उद्यमियों के लिए निःशुल्क सरकारी कौशल प्रशिक्षण, प्रमाण पत्र व मार्गदर्शन।',
+    loanCeiling: 0,
+    interestSubsidyPct: 100.0,
+    baseScore: 86,
+    targetProblems: ['unknown', 'employees'],
+    targetGenders: ['male', 'female', 'other'],
+    portalUrl: 'https://www.pmkvyofficial.org/',
+    keyBenefits_en: ['Free hands-on industry skill training', 'Government-recognized skill certification', 'Monetary rewards up to ₹8,000 upon successful completion'],
+    keyBenefits_hi: ['निःशुल्क व्यावहारिक कौशल व व्यापार प्रशिक्षण', 'मान्यता प्राप्त सरकारी कौशल प्रमाण पत्र', 'सफलतापूर्वक पूरा करने पर ₹8,000 तक का नकद पुरस्कार'],
+  },
 ];
 
 function matchSchemes(user = {}, business = {}, financial = {}, problems = [], localContext = {}) {
+  const isBeginner =
+    user.portal_type === 'beginner' ||
+    business.portal_type === 'beginner' ||
+    financial.isBeginner === true;
+
   const revenue = financial.revenue || 0;
   const userGender = (user.gender || '').toLowerCase();
   const safeProblems = Array.isArray(problems) ? problems : [];
+  const capitalRange = business.capital_range || business.capitalRange || '';
+  const skills = (business.skills || '').toLowerCase();
+  const bizWhat = (business.what || business.interests || '').toLowerCase();
+  const isArtisan = /tailor|sew|cloth|carpenter|wood|iron|smith|potter|basket|weave|barber|artisan/i.test(bizWhat) ||
+    /tailor|sew|carpenter|wood|iron|smith|artisan/i.test(skills);
 
   const evaluatedSchemes = SCHEMES_MASTER.map((scheme) => {
     let score = scheme.baseScore;
 
-    // 1. Revenue Matcher Rules
-    if (scheme.code === 'pm_svanidhi') {
-      if (revenue > 0 && revenue < 15000) {
-        score = 88;
-      } else if (revenue >= 15000 && revenue <= 30000) {
-        score += 5;
-      } else if (revenue > 50000) {
-        score -= 25;
+    if (isBeginner) {
+      // Beginner specific matching rules
+      if (scheme.code === 'udyam_reg') {
+        score = 96;
+      } else if (scheme.code === 'mudra_shishu') {
+        if (capitalRange === 'under_10k' || capitalRange === '10k_50k' || capitalRange === 'loan_needed') {
+          score = 92;
+        } else {
+          score = 80;
+        }
+      } else if (scheme.code === 'pm_vishwakarma') {
+        if (isArtisan) {
+          score = 95;
+        } else {
+          score = 65;
+        }
+      } else if (scheme.code === 'pmegp') {
+        if (capitalRange === '50k_2lakh' || capitalRange === '2lakh_5lakh') {
+          score = 90;
+        } else {
+          score = 82;
+        }
+      } else if (scheme.code === 'pmkvy') {
+        if (safeProblems.includes('unknown') || skills.length === 0) {
+          score = 91;
+        } else {
+          score = 84;
+        }
+      } else if (scheme.code === 'stand_up_india') {
+        if (userGender === 'female' || userGender === 'other') {
+          score = (capitalRange === '2lakh_5lakh' || capitalRange === '50k_2lakh') ? 88 : 78;
+        } else {
+          score = 45;
+        }
+      } else if (scheme.code === 'pm_svanidhi') {
+        if (capitalRange === 'under_10k' || bizWhat.includes('food') || bizWhat.includes('stall') || bizWhat.includes('tea')) {
+          score = 85;
+        } else {
+          score = 60;
+        }
+      } else if (scheme.code === 'mudra_tarun' || scheme.code === 'mudra_kishore') {
+        score -= 20; // beginners rarely qualify for tarun/kishore initially
       }
-    } else if (scheme.code === 'pmegp') {
-      if (safeProblems.includes('workingcap') || safeProblems.includes('loanrepay')) {
-        score = 81;
-      } else if (revenue >= 15000) {
-        score += 8;
+    } else {
+      // Existing business matching rules (existing flow)
+      if (scheme.code === 'pm_svanidhi') {
+        if (revenue > 0 && revenue < 15000) {
+          score = 88;
+        } else if (revenue >= 15000 && revenue <= 30000) {
+          score += 5;
+        } else if (revenue > 50000) {
+          score -= 25;
+        }
+      } else if (scheme.code === 'pmegp') {
+        if (safeProblems.includes('workingcap') || safeProblems.includes('loanrepay')) {
+          score = 81;
+        } else if (revenue >= 15000) {
+          score += 8;
+        }
+      } else if (scheme.code === 'mudra_tarun') {
+        if (revenue >= 50000) {
+          score = 79;
+        } else if (revenue < 25000) {
+          score -= 20;
+        }
+      } else if (scheme.code === 'mudra_shishu') {
+        if (revenue <= 30000) {
+          score = Math.max(score, 74);
+        }
+      } else if (scheme.code === 'mudra_kishore') {
+        if (revenue >= 20000 && revenue <= 60000) {
+          score += 8;
+        }
+      } else if (scheme.code === 'stand_up_india') {
+        if (userGender === 'female' || userGender === 'other') {
+          score += 20;
+        } else {
+          score -= 15;
+        }
+      } else if (scheme.code === 'pm_vishwakarma') {
+        if (isArtisan || safeProblems.includes('rawcost') || safeProblems.includes('suppliers')) {
+          score += 13;
+        }
+      } else if (scheme.code === 'udyam_reg') {
+        score = 85;
+      } else if (scheme.code === 'pmkvy') {
+        score = 70;
       }
-    } else if (scheme.code === 'mudra_tarun') {
-      if (revenue >= 50000) {
-        score = 79;
-      } else if (revenue < 25000) {
-        score -= 20;
-      }
-    } else if (scheme.code === 'mudra_shishu') {
-      if (revenue <= 30000) {
-        score = Math.max(score, 74);
-      }
-    } else if (scheme.code === 'mudra_kishore') {
-      if (revenue >= 20000 && revenue <= 60000) {
-        score += 8;
-      }
-    } else if (scheme.code === 'stand_up_india') {
-      if (userGender === 'female' || userGender === 'other') {
-        score += 20;
-      } else {
-        score -= 15;
-      }
-    } else if (scheme.code === 'pm_vishwakarma') {
-      const bizWhat = (business.what || '').toLowerCase();
-      const isArtisan = /tailor|sew|cloth|carpenter|wood|iron|smith|potter|basket|weave|barber|artisan/i.test(bizWhat);
-      if (isArtisan || safeProblems.includes('rawcost') || safeProblems.includes('suppliers')) {
-        score += 13;
-      }
+
+      // Problem Alignment Modifiers
+      const matchedProblems = scheme.targetProblems.filter((p) => safeProblems.includes(p));
+      score += matchedProblems.length * 2;
     }
 
-    // 2. Problem Alignment Modifiers
-    const matchedProblems = scheme.targetProblems.filter((p) => safeProblems.includes(p));
-    score += matchedProblems.length * 2;
-
-    // 3. Local Context Alignment
+    // Local Context Alignment
     if (localContext?.demographics?.ruralRatio && scheme.code === 'pmegp') {
       score += 2;
     }

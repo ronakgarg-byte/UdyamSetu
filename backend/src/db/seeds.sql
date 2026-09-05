@@ -134,5 +134,35 @@ INSERT INTO schemes (
     ARRAY['male', 'female', 'other'],
     85,
     'https://pmvishwakarma.gov.in/'
+),
+(
+    'udyam_reg',
+    'Udyam Registration Portal (Zero Cost MSME Certificate)',
+    'उद्यम पंजीकरण पोर्टल (निःशुल्क एमएसएमई प्रमाण पत्र)',
+    'Ministry of MSME',
+    'सूक्ष्म, लघु एवं मध्यम उद्यम मंत्रालय',
+    'Official paperless government registration for micro-enterprises providing direct access to priority bank loans, subsidy schemes, and legal protection against delayed payments.',
+    'सूक्ष्म उद्यमों के लिए आधिकारिक निःशुल्क सरकारी पंजीकरण जो प्राथमिकता बैंक ऋण, सरकारी सब्सिडी और भुगतान सुरक्षा प्रदान करता है।',
+    0, 0, 100.00,
+    0, NULL,
+    ARRAY['unknown', 'workingcap', 'marketing'],
+    ARRAY['male', 'female', 'other'],
+    95,
+    'https://udyamregistration.gov.in/'
+),
+(
+    'pmkvy',
+    'PMKVY (Pradhan Mantri Kaushal Vikas Yojana)',
+    'प्रधानमंत्री कौशल विकास योजना (पीएमकेवीवाई)',
+    'Ministry of Skill Development and Entrepreneurship',
+    'कौशल विकास और उद्यमिता मंत्रालय',
+    'Free government-certified skill training and entrepreneurship development programs with ₹8,000 cash reward and placement support for aspiring youth.',
+    'इच्छुक उद्यमियों और युवाओं के लिए ₹8,000 नकद पुरस्कार और प्रमाणन के साथ निःशुल्क सरकारी कौशल प्रशिक्षण व मार्गदर्शन।',
+    0, 0, 100.00,
+    0, NULL,
+    ARRAY['unknown', 'employees'],
+    ARRAY['male', 'female', 'other'],
+    90,
+    'https://www.pmkvyofficial.org/'
 )
 ON CONFLICT (code) DO NOTHING;

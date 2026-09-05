@@ -23,6 +23,7 @@ CREATE TABLE users (
     district VARCHAR(100),
     state VARCHAR(100) DEFAULT 'Uttar Pradesh',
     pincode VARCHAR(20),
+    portal_type VARCHAR(50) DEFAULT 'existing',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -34,6 +35,17 @@ CREATE TABLE businesses (
     what TEXT,
     workers INTEGER DEFAULT 0,
     hours VARCHAR(100),
+    portal_type VARCHAR(50) DEFAULT 'existing',
+    interests TEXT,
+    skills TEXT,
+    capital_range VARCHAR(100),
+    space_type VARCHAR(100),
+    time_commitment VARCHAR(100),
+    risk_appetite VARCHAR(100),
+    barriers TEXT,
+    growth_aspiration VARCHAR(100),
+    growth_barriers TEXT,
+    credit_history VARCHAR(100),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uq_business_user UNIQUE (user_id)

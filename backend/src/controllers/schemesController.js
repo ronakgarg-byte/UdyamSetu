@@ -42,11 +42,20 @@ async function getMatchingSchemes(req, res) {
       problems = inMemoryStore.user_problems.filter((r) => r.userId === userId).map((r) => r.key);
     }
 
-    // 1. Calculate financial metrics
-    const financial = calculateFinancialMetrics(sales, expenses, items, problems);
+    const isBeginner =
+      user.portal_type === 'beginner' ||
+      business.portal_type === 'beginner' ||
+      req.query.portal_type === 'beginner' ||
+      req.query.portalType === 'beginner';
+
+    // 1. Calculate financial metrics or beginner plan
+    const { calculateBeginnerPlan } = require('../services/financialService');
+    const financial = isBeginner
+      ? calculateBeginnerPlan(user, business, problems)
+      : calculateFinancialMetrics(sales, expenses, items, problems);
 
     // 2. Fetch local context
-    const localContext = await getAggregatedLocalContext(user.district || 'Varanasi');
+    const localContext = await getAggregatedLocalContext(user.district || business.district || 'Varanasi');
 
     // 3. Match schemes
     const schemes = matchSchemes(user, business, financial, problems, localContext);

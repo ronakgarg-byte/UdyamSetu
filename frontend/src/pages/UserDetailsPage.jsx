@@ -8,7 +8,7 @@ import { User, ShieldCheck } from 'lucide-react';
 
 export default function UserDetailsPage() {
   const navigate = useNavigate();
-  const { user, setUser, setUserId, t, lang } = useApp();
+  const { user, setUser, setUserId, portalType, t, lang } = useApp();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -36,6 +36,7 @@ export default function UserDetailsPage() {
         preferred_language: lang,
         district: 'Varanasi',
         state: 'Uttar Pradesh',
+        portal_type: portalType,
       });
 
       if (res?.userId) {
@@ -53,8 +54,8 @@ export default function UserDetailsPage() {
   return (
     <Layout
       title={t("udTitle")}
-      progress={15}
-      onBack={() => navigate('/')}
+      progress={20}
+      onBack={() => navigate('/portal-select')}
       onNext={handleNext}
       loading={loading}
     >

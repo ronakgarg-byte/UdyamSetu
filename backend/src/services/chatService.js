@@ -61,7 +61,17 @@ async function getUserFullContext(userId, clientContext = {}) {
     if (clientContext.competition) competition = { ...competition, ...clientContext.competition };
   }
 
-  const financial = calculateFinancialMetrics(sales, expenses, items, problems);
+  const isBeginner =
+    user.portal_type === 'beginner' ||
+    business.portal_type === 'beginner' ||
+    clientContext?.user?.portal_type === 'beginner' ||
+    clientContext?.portalType === 'beginner';
+
+  const { calculateFinancialMetrics, calculateBeginnerPlan } = require('./financialService');
+  const financial = isBeginner
+    ? calculateBeginnerPlan(user, business, problems)
+    : calculateFinancialMetrics(sales, expenses, items, problems);
+
   const localContext = await getAggregatedLocalContext(user.district || business.district || 'Varanasi');
   const schemes = matchSchemes(user, business, financial, problems, localContext);
 
@@ -77,11 +87,12 @@ async function getUserFullContext(userId, clientContext = {}) {
     financial,
     schemes,
     localContext,
+    isBeginner: Boolean(isBeginner),
   };
 }
 
 function buildSystemPrompt(context, lang = 'en') {
-  const { user, business, sales, expenses, items, problems, customers, competition, financial, schemes, localContext } = context;
+  const { user, business, sales, expenses, items, problems, customers, competition, financial, schemes, localContext, isBeginner } = context;
   const isHindi = lang === 'hi';
   const marginPct = financial.revenue > 0 ? ((financial.netProfit / financial.revenue) * 100).toFixed(1) : '0';
   const expenseRatio = financial.revenue > 0 ? ((financial.totalExpenses / financial.revenue) * 100).toFixed(1) : '0';
@@ -97,6 +108,42 @@ function buildSystemPrompt(context, lang = 'en') {
 - Key Highlights: ${(s.keyBenefits_en || []).join('; ') || s.description_en}
 - Official Portal: ${s.portalUrl}`;
   }).join('\n\n');
+
+  if (isBeginner) {
+    const recIdea = financial.recommendedIdea || {};
+    return `You are "Udyam Setu AI Startup Mentor & Ideation Advisor" (उद्यम सेतु मुख्य स्टार्ट-अप मार्गदर्शक), powered by Google Gemini Thinking & Cognitive Reasoning Engine.
+Your mission is to guide aspiring rural & semi-urban micro-entrepreneurs who have NOT started their business yet to discover high-margin business ideas, validate local demand, source equipment & raw materials at wholesale APMC mandi rates, and secure government startup grants/loans (under Ministry of Social Justice & Empowerment, Problem SIH26091).
+
+=======================================================
+🧠 ASPIRING ENTREPRENEUR PROFILE & DISCOVERY:
+=======================================================
+- Name: ${user.name || 'Aspiring Entrepreneur'} (Age: ${user.age || 'N/A'}, Gender: ${user.gender || 'N/A'})
+- Location: ${user.district || business.district || 'Varanasi'}, ${user.state || business.state || 'Uttar Pradesh'}
+- Interest Area: ${business.interests || business.what || 'Open to recommendations'}
+- Existing Skills / Assets: ${business.skills || 'General local skills'}
+- Starting Capital Range: ${business.capital_range || '₹10,000 – ₹50,000'}
+- Space Type: ${business.space_type || 'Home / Mobile Stall'}
+- Time Commitment: ${business.time_commitment || 'Full-time'}
+- Biggest Barriers: ${business.barriers || problems.join(', ') || 'Capital & Guidance'}
+- AI Recommended Business Idea: ${recIdea.title_en || 'Regional Retail Essentials'} (${recIdea.title_hi || ''})
+- Projected Earnings: ${recIdea.estimatedMonthlyProfit || '₹15,000 – ₹25,000/month'}
+
+=======================================================
+🏛️ APPLICABLE STARTUP GOVERNMENT SCHEMES:
+=======================================================
+${schemeDirectoryText}
+
+=======================================================
+🎯 RESPONSE GUIDELINES FOR BEGINNERS:
+=======================================================
+1. Language: ${isHindi ? 'Fluent, encouraging, highly structured Hindi in Devanagari script (सरल, प्रेरक और स्पष्ट हिन्दी)' : 'Clear, encouraging, structured English'}.
+2. Always give concrete, step-by-step guidance:
+   - Step 1: Free Udyam MSME Registration (100% paperless).
+   - Step 2: Sourcing raw materials from local APMC wholesale mandis (saving 20-30%).
+   - Step 3: Applying for Mudra Shishu (₹50k collateral-free), PM Vishwakarma (₹3L @ 5% + ₹15,000 toolkit), or PMEGP (35% subsidy).
+   - Step 4: Low-overhead workspace setup.
+   - Step 5: Getting first 25 customers.`;
+  }
 
   return `You are "Udyam Setu AI Business Strategist & Financial Advisor" (उद्यम सेतु मुख्य वित्तीय व व्यापार रणनीतिकार), powered by Google Gemini Thinking & Cognitive Reasoning Engine.
 Your mission is to provide deep, analytical, mathematically grounded, yet simple and empowering business consulting and government scheme guidance to micro-entrepreneurs across India (under Ministry of Social Justice & Empowerment, Problem SIH26091).

@@ -4,10 +4,26 @@ import { useApp } from '../context/AppContext';
 import { Field, TextInput, Chip, VoiceRow } from '../components/Common';
 import Layout from '../components/Layout';
 import GoogleLocationPicker from '../components/GoogleLocationPicker';
-import { EXPENSE_FIELDS, CUSTOMER_OPTIONS, PROBLEM_OPTIONS } from '../i18n/translations';
+import BeginnerQuestionnaire from '../components/BeginnerQuestionnaire';
+import {
+  EXPENSE_FIELDS,
+  CUSTOMER_OPTIONS,
+  PROBLEM_OPTIONS,
+  GROWTH_ASPIRATION_OPTIONS,
+  GROWTH_BARRIER_OPTIONS,
+  CREDIT_HISTORY_OPTIONS,
+} from '../i18n/translations';
 import { api } from '../services/api';
 import { stopSpeaking } from '../utils/speechUtils';
-import { Store, TrendingUp, Receipt, Users, Compass, AlertCircle, ShieldCheck } from 'lucide-react';
+import {
+  Store,
+  TrendingUp,
+  Receipt,
+  Users,
+  Compass,
+  AlertCircle,
+  ShieldCheck,
+} from 'lucide-react';
 
 export default function QuestionnairePage() {
   const navigate = useNavigate();
@@ -17,6 +33,7 @@ export default function QuestionnairePage() {
     t,
     opt,
     userId,
+    portalType,
     biz,
     setBiz,
     sales,
@@ -29,9 +46,16 @@ export default function QuestionnairePage() {
     setCompetition,
     problems,
     setProblems,
+    growthData,
+    setGrowthData,
     toggle,
     lang,
   } = useApp();
+
+  // If user is in Beginner Portal ("Shuruaat"), render the dedicated Discovery flow
+  if (portalType === 'beginner') {
+    return <BeginnerQuestionnaire />;
+  }
 
   const sectionTitles = [
     t("secA"),
@@ -62,16 +86,21 @@ export default function QuestionnairePage() {
   };
 
   const handleNext = () => {
-    // 1. Immediately stop any active TTS reading
     stopSpeaking();
 
-    // 2. Perform background async sync to backend (non-blocking)
+    // Background async sync to backend (non-blocking)
     if (userId) {
       const stepToSave = qStep;
       (async () => {
         try {
           if (stepToSave === 0) {
-            await api.saveBusiness(userId, biz);
+            await api.saveBusiness(userId, {
+              ...biz,
+              portal_type: 'existing',
+              growth_aspiration: growthData.aspiration,
+              growth_barriers: growthData.barriers,
+              credit_history: growthData.creditHistory,
+            });
           } else if (stepToSave === 1) {
             await api.saveSales(userId, sales);
           } else if (stepToSave === 2) {
@@ -82,6 +111,13 @@ export default function QuestionnairePage() {
               competition,
               problems,
             });
+            await api.saveBusiness(userId, {
+              ...biz,
+              portal_type: 'existing',
+              growth_aspiration: growthData.aspiration,
+              growth_barriers: growthData.barriers,
+              credit_history: growthData.creditHistory,
+            });
           }
         } catch (err) {
           console.warn('[QuestionnairePage] Background sync note:', err.message);
@@ -89,7 +125,6 @@ export default function QuestionnairePage() {
       })();
     }
 
-    // 3. Immediately transition to next slide
     if (qStep < 5) {
       setQStep((prev) => prev + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -120,7 +155,7 @@ export default function QuestionnairePage() {
               </div>
               <div>
                 <p className="text-xs font-bold text-[#a36a2d] uppercase tracking-wider">
-                  {t("sectionOf")} {qStep + 1} / 6
+                  {t("sectionOf")} {qStep + 1} / 6 • Portal B: Vistaar
                 </p>
                 <h2 className="font-heading text-xl sm:text-2xl font-bold text-[#1f3a5f]">
                   {sectionTitles[qStep]}
@@ -179,6 +214,55 @@ export default function QuestionnairePage() {
                     />
                   </Field>
                 </div>
+              </div>
+
+              {/* Growth Aspiration & Credit History */}
+              <div className="mt-4 pt-4 border-t border-[#e4d9c7] grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label={t("qGrowthAspiration")}>
+                  <div className="flex flex-col gap-2">
+                    {GROWTH_ASPIRATION_OPTIONS.map((optItem) => {
+                      const isSelected = growthData.aspiration === optItem.key;
+                      return (
+                        <button
+                          key={optItem.key}
+                          type="button"
+                          onClick={() => setGrowthData({ ...growthData, aspiration: optItem.key })}
+                          className={'p-3 rounded-xl border text-xs font-semibold transition text-left flex items-center justify-between ' + (
+                            isSelected
+                              ? 'bg-[#1f3a5f] text-white border-[#1f3a5f] shadow-sm'
+                              : 'bg-[#faf6ee] text-[#5b4636] border-[#e4d9c7] hover:bg-[#efe6d6]'
+                          )}
+                        >
+                          <span>{opt(optItem)}</span>
+                          {isSelected && <span className="text-[#e8a33d] font-bold">✓</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </Field>
+
+                <Field label={t("qCreditHistory")}>
+                  <div className="flex flex-col gap-2">
+                    {CREDIT_HISTORY_OPTIONS.map((c) => {
+                      const isSelected = growthData.creditHistory === c.key;
+                      return (
+                        <button
+                          key={c.key}
+                          type="button"
+                          onClick={() => setGrowthData({ ...growthData, creditHistory: c.key })}
+                          className={'p-3 rounded-xl border text-xs font-semibold transition text-left flex items-center justify-between ' + (
+                            isSelected
+                              ? 'bg-[#1f3a5f] text-white border-[#1f3a5f] shadow-sm'
+                              : 'bg-[#faf6ee] text-[#5b4636] border-[#e4d9c7] hover:bg-[#efe6d6]'
+                          )}
+                        >
+                          <span>{opt(c)}</span>
+                          {isSelected && <span className="text-[#e8a33d] font-bold">✓</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </Field>
               </div>
 
               {/* Google Map Interactive Location Picker - Full Width */}
@@ -329,9 +413,9 @@ export default function QuestionnairePage() {
             </div>
           )}
 
-          {/* Section F: Biggest problem */}
+          {/* Section F: Biggest problem & Growth bottlenecks */}
           {qStep === 5 && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <VoiceRow
                 textToRead={`${t("secF")}. ${t("qProblem")}`}
                 helperText={
@@ -363,6 +447,38 @@ export default function QuestionnairePage() {
                   })}
                 </div>
               </Field>
+
+              {/* Growth Bottlenecks */}
+              <div className="pt-4 border-t border-[#e4d9c7]">
+                <Field label={t("qGrowthBarriers")} optional>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {GROWTH_BARRIER_OPTIONS.map((gb) => {
+                      const isSelected = (growthData.barriers || []).includes(gb.key);
+                      return (
+                        <button
+                          key={gb.key}
+                          type="button"
+                          onClick={() =>
+                            toggle(
+                              growthData.barriers || [],
+                              gb.key,
+                              (newList) => setGrowthData({ ...growthData, barriers: newList })
+                            )
+                          }
+                          className={'p-3 rounded-xl border text-xs font-semibold transition text-left flex items-center justify-between ' + (
+                            isSelected
+                              ? 'bg-[#1f3a5f] text-white border-[#1f3a5f] shadow-sm'
+                              : 'bg-[#faf6ee] text-[#5b4636] border-[#e4d9c7] hover:bg-[#efe6d6]'
+                          )}
+                        >
+                          <span>{opt(gb)}</span>
+                          {isSelected && <span className="text-[#e8a33d] font-bold ml-1">✓</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </Field>
+              </div>
             </div>
           )}
         </div>

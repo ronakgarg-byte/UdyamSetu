@@ -1,7 +1,7 @@
 const { test, describe, before, after } = require('node:test');
 const assert = require('node:assert');
 const app = require('../src/index');
-const { calculateFinancialMetrics } = require('../src/services/financialService');
+const { calculateFinancialMetrics, calculateBeginnerPlan } = require('../src/services/financialService');
 
 describe('Financial Analysis Engine Unit & API Tests', () => {
   let server;
@@ -152,5 +152,69 @@ describe('Financial Analysis Engine Unit & API Tests', () => {
     assert.strictEqual(data.analysis.workingCapital, 420);
     assert.strictEqual(data.analysis.scheme.code, 'pmegp');
     assert.strictEqual(data.analysis.riskLevel, 'low');
+  });
+
+  test('calculateBeginnerPlan - unit test generates structured roadmap & recommendation', () => {
+    const user = { name: 'Kavita Sharma', state: 'Rajasthan', district: 'Jaipur' };
+    const business = {
+      interests: ['handicrafts', 'retail'],
+      skills: 'embroidery and stitching',
+      capital_range: '10k_50k',
+      space_type: 'home',
+      time_commitment: 'part_time',
+      barriers: ['lack_capital', 'market_access'],
+    };
+    const problems = ['lack_capital'];
+
+    const plan = calculateBeginnerPlan(user, business, problems);
+
+    assert.strictEqual(plan.isBeginner, true);
+    assert.ok(plan.recommendedIdea);
+    assert.strictEqual(plan.recommendedIdea.title, 'Handmade Crafts & Stitching Boutique');
+    assert.ok(plan.steps && plan.steps.length === 5);
+    assert.ok(plan.estimatedStartupCost > 0);
+    assert.ok(plan.projectedMonthlyProfit);
+    assert.strictEqual(plan.recommendedScheme.code, 'pm_vishwakarma');
+  });
+
+  test('GET /api/analysis/:userId - beginner user gets personalized startup roadmap', async () => {
+    const userRes = await fetch(`${baseUrl}/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Ramesh Patel',
+        phone: '9876500000',
+        state: 'Gujarat',
+        district: 'Ahmedabad',
+        portal_type: 'beginner',
+      }),
+    });
+    const { user } = await userRes.json();
+    const userId = user.id;
+
+    await fetch(`${baseUrl}/businesses/${userId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        portal_type: 'beginner',
+        interests: ['food', 'services'],
+        skills: 'cooking snacks, chai making',
+        capital_range: 'under_10k',
+        space_type: 'stall',
+        time_commitment: 'full_time',
+        barriers: ['lack_capital'],
+      }),
+    });
+
+    const analysisRes = await fetch(`${baseUrl}/analysis/${userId}`);
+    assert.strictEqual(analysisRes.status, 200);
+    const data = await analysisRes.json();
+
+    assert.strictEqual(data.success, true);
+    assert.strictEqual(data.userId, userId);
+    assert.strictEqual(data.analysis.isBeginner, true);
+    assert.strictEqual(data.analysis.recommendedIdea.title, 'Street Food & Beverage Stall');
+    assert.ok(data.analysis.steps.length === 5);
+    assert.strictEqual(data.analysis.recommendedScheme.code, 'pm_svanidhi');
   });
 });

@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import WelcomePage from './pages/WelcomePage';
+import PortalSelectPage from './pages/PortalSelectPage';
 import UserDetailsPage from './pages/UserDetailsPage';
 import QuestionnairePage from './pages/QuestionnairePage';
 import ItemsPage from './pages/ItemsPage';
@@ -13,6 +14,7 @@ export default function App() {
       <Router>
         <Routes>
           <Route path="/" element={<WelcomePage />} />
+          <Route path="/portal-select" element={<PortalSelectPage />} />
           <Route path="/details" element={<UserDetailsPage />} />
           <Route path="/questionnaire" element={<QuestionnairePage />} />
           <Route path="/items" element={<ItemsPage />} />

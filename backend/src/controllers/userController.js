@@ -3,7 +3,19 @@ const crypto = require('crypto');
 
 async function createUser(req, res) {
   try {
-    const { name, age, gender, phone, preferred_language = 'en', district = 'Varanasi', state = 'Uttar Pradesh' } = req.body;
+    const {
+      name,
+      age,
+      gender,
+      phone,
+      preferred_language = 'en',
+      district = 'Varanasi',
+      state = 'Uttar Pradesh',
+      portal_type = 'existing',
+      portalType,
+    } = req.body;
+
+    const resolvedPortalType = portal_type || portalType || 'existing';
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return res.status(400).json({ error: 'Name is required' });
@@ -14,10 +26,10 @@ async function createUser(req, res) {
 
     if (isPostgres()) {
       const result = await pool.query(
-        `INSERT INTO users (name, age, gender, phone, preferred_language, district, state)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `INSERT INTO users (name, age, gender, phone, preferred_language, district, state, portal_type)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          RETURNING *`,
-        [name.trim(), ageNum, gender || null, phoneStr, preferred_language, district, state]
+        [name.trim(), ageNum, gender || null, phoneStr, preferred_language, district, state, resolvedPortalType]
       );
       const user = result.rows[0];
       return res.status(201).json({ success: true, userId: user.id, user });
@@ -32,6 +44,7 @@ async function createUser(req, res) {
         preferred_language,
         district,
         state,
+        portal_type: resolvedPortalType,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };

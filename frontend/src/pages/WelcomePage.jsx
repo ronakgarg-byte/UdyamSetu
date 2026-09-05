@@ -192,7 +192,7 @@ export default function WelcomePage() {
             {/* Primary Action Button */}
             <button
               type="button"
-              onClick={() => navigate('/details')}
+              onClick={() => navigate('/portal-select')}
               className="w-full sm:w-auto sm:min-w-[280px] flex items-center justify-center gap-3 py-4 px-8 rounded-2xl font-heading font-bold text-base shadow-xl transition-all active:scale-[0.98] hover:shadow-2xl hover:bg-[#152742]"
               style={{ background: '#1f3a5f', color: '#fffdf9' }}
             >
