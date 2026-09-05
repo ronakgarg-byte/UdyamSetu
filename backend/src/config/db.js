@@ -12,7 +12,8 @@ class InMemoryStore {
     this.competition = new Map();
     this.user_problems = [];
     this.items = new Map(); // userId -> array of items
-    this.schemes = [];
+    const { SCHEMES_MASTER } = require('../services/schemeMatchingService');
+    this.schemes = SCHEMES_MASTER.map((s, idx) => ({ id: String(idx + 1), ...s }));
     this.local_context_cache = new Map();
 
     this.initMasterData();

@@ -40,6 +40,8 @@ router.get('/items/:userId', itemsController.getItems);
 router.get('/analysis/:userId', analysisController.getAnalysis);
 
 // Government Schemes Matcher route
+router.post('/schemes/compare', schemesController.compareSchemes);
+router.get('/schemes/compare', schemesController.compareSchemes);
 router.get('/schemes/:userId', schemesController.getMatchingSchemes);
 
 // Hyper-local Context route

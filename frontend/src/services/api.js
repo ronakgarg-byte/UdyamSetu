@@ -77,6 +77,11 @@ export const api = {
 
   // 8. Schemes & Local Context
   getSchemes: (userId) => request(`/schemes/${userId}`),
+  compareSchemes: (schemeIdA, schemeIdB, userId, portalType) =>
+    request('/schemes/compare', {
+      method: 'POST',
+      body: JSON.stringify({ schemeIdA, schemeIdB, userId, portalType }),
+    }),
   getLocalContext: (userId) => request(`/local-context/${userId}`),
 
   // 9. AI Chatbot

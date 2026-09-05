@@ -5,6 +5,7 @@ import { QACard } from '../components/Common';
 import Layout from '../components/Layout';
 import ChatWidget from '../components/ChatWidget';
 import AgmarknetPricingWidget from '../components/AgmarknetPricingWidget';
+import SchemeComparisonModal from '../components/SchemeComparisonModal';
 import { fmt } from '../i18n/translations';
 import { api } from '../services/api';
 import {
@@ -29,6 +30,7 @@ import {
   Wallet,
   CheckSquare,
   Compass,
+  ArrowRightLeft,
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -40,6 +42,12 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [showSchemesModal, setShowSchemesModal] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+
+  // Scheme Comparison State
+  const [selectedSchemes, setSelectedSchemes] = useState([]);
+  const [showCompareModal, setShowCompareModal] = useState(false);
+  const [comparisonData, setComparisonData] = useState(null);
+  const [loadingComparison, setLoadingComparison] = useState(false);
 
   const isHindi = lang === 'hi';
   const isBeginner = portalType === 'beginner' || apiAnalysis?.isBeginner === true;
@@ -117,6 +125,36 @@ export default function DashboardPage() {
     }
   };
 
+  // Scheme Comparison Handler
+  const handleToggleSchemeSelection = (schemeCode) => {
+    if (!schemeCode) return;
+    if (selectedSchemes.includes(schemeCode)) {
+      setSelectedSchemes(selectedSchemes.filter((c) => c !== schemeCode));
+    } else {
+      if (selectedSchemes.length >= 2) {
+        setSelectedSchemes([selectedSchemes[1], schemeCode]);
+      } else {
+        setSelectedSchemes([...selectedSchemes, schemeCode]);
+      }
+    }
+  };
+
+  const handleOpenComparison = async () => {
+    if (selectedSchemes.length < 2) return;
+    setShowCompareModal(true);
+    setLoadingComparison(true);
+    try {
+      const res = await api.compareSchemes(selectedSchemes[0], selectedSchemes[1], userId, portalType);
+      if (res?.success) {
+        setComparisonData(res);
+      }
+    } catch (err) {
+      console.error('Failed to fetch scheme comparison:', err);
+    } finally {
+      setLoadingComparison(false);
+    }
+  };
+
   return (
     <Layout
       title={isBeginner ? t('dashBeginnerHi') : t('dashHi')}
@@ -124,7 +162,7 @@ export default function DashboardPage() {
       onBack={handleBack}
       progress={100}
     >
-      <div className="pb-16 w-full">
+      <div className="pb-24 w-full">
         {/* Top Greeting & Location Context Banner */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6 pb-4 border-b border-[#e4d9c7]">
           <div>
@@ -290,15 +328,30 @@ export default function DashboardPage() {
                 </p>
 
                 <div className="mt-5 pt-4 border-t border-white/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <a
-                    href={schemeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-heading font-bold text-xs sm:text-sm bg-[#e8a33d] text-[#1f3a5f] hover:bg-[#f3b759] active:scale-95 transition shadow-md"
-                  >
-                    <span>{t('applyOnPortal')}</span>
-                    <ArrowUpRight className="w-4 h-4" />
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={schemeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-heading font-bold text-xs sm:text-sm bg-[#e8a33d] text-[#1f3a5f] hover:bg-[#f3b759] active:scale-95 transition shadow-md"
+                    >
+                      <span>{t('applyOnPortal')}</span>
+                      <ArrowUpRight className="w-4 h-4" />
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => handleToggleSchemeSelection(recommendedScheme.code)}
+                      className={'px-3.5 py-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition border ' + (
+                        selectedSchemes.includes(recommendedScheme.code)
+                          ? 'bg-white text-[#1f3a5f] border-white'
+                          : 'bg-white/15 text-white border-white/20 hover:bg-white/25'
+                      )}
+                    >
+                      <ArrowRightLeft className="w-3.5 h-3.5" />
+                      <span>{selectedSchemes.includes(recommendedScheme.code) ? (isHindi ? 'चयनित ✓' : 'Selected ✓') : (isHindi ? '+ तुलना करें' : '+ Compare')}</span>
+                    </button>
+                  </div>
 
                   <button
                     type="button"
@@ -569,15 +622,30 @@ export default function DashboardPage() {
                 </p>
 
                 <div className="mt-5 pt-4 border-t border-white/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <a
-                    href={schemeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-heading font-bold text-xs sm:text-sm bg-[#e8a33d] text-[#1f3a5f] hover:bg-[#f3b759] active:scale-95 transition shadow-md"
-                  >
-                    <span>{t('applyOnPortal')}</span>
-                    <ArrowUpRight className="w-4 h-4" />
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={schemeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-heading font-bold text-xs sm:text-sm bg-[#e8a33d] text-[#1f3a5f] hover:bg-[#f3b759] active:scale-95 transition shadow-md"
+                    >
+                      <span>{t('applyOnPortal')}</span>
+                      <ArrowUpRight className="w-4 h-4" />
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={() => handleToggleSchemeSelection(recommendedScheme.code)}
+                      className={'px-3.5 py-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition border ' + (
+                        selectedSchemes.includes(recommendedScheme.code)
+                          ? 'bg-white text-[#1f3a5f] border-white'
+                          : 'bg-white/15 text-white border-white/20 hover:bg-white/25'
+                      )}
+                    >
+                      <ArrowRightLeft className="w-3.5 h-3.5" />
+                      <span>{selectedSchemes.includes(recommendedScheme.code) ? (isHindi ? 'चयनित ✓' : 'Selected ✓') : (isHindi ? '+ तुलना करें' : '+ Compare')}</span>
+                    </button>
+                  </div>
 
                   <div className="flex items-center justify-between sm:justify-end gap-3">
                     <button
@@ -633,7 +701,7 @@ export default function DashboardPage() {
                         {isHindi ? 'राष्ट्रीय सरकारी ऋण व सब्सिडी योजनाएं' : 'National Government Schemes Directory'}
                       </h3>
                       <p className="text-[11px] text-[#8a7a68]">
-                        {isHindi ? 'सीधे आधिकारिक पोर्टल पर जाकर आवेदन करें' : 'Direct links to verified ministry portals'}
+                        {isHindi ? 'सीधे आधिकारिक पोर्टल पर जाएं या 2 योजनाओं की तुलना करें' : 'Direct ministry portals • Compare any 2 schemes'}
                       </p>
                     </div>
                   </div>
@@ -658,10 +726,16 @@ export default function DashboardPage() {
                       'https://pmsvanidhi.mohua.gov.in/'
                     );
 
+                    const isSelected = selectedSchemes.includes(s.code);
+
                     return (
                       <div
                         key={s.code || idx}
-                        className="p-3.5 sm:p-4 rounded-2xl border border-[#e4d9c7] bg-[#faf6ee] hover:bg-[#fffdf9] hover:border-[#1f3a5f]/40 transition shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                        className={'p-3.5 sm:p-4 rounded-2xl border transition shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 ' + (
+                          isSelected
+                            ? 'bg-[#faf4e8] border-[#e8a33d]'
+                            : 'bg-[#faf6ee] border-[#e4d9c7] hover:bg-[#fffdf9] hover:border-[#1f3a5f]/40'
+                        )}
                       >
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
@@ -686,15 +760,31 @@ export default function DashboardPage() {
                           <span className="text-[11px] font-bold text-[#1f3a5f]">
                             Max: ₹{(s.loanCeiling || 50000).toLocaleString('en-IN')}
                           </span>
-                          <a
-                            href={directUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#1f3a5f] text-white hover:bg-[#152742] transition shadow-sm"
-                          >
-                            <span>{t('applyOnPortal')}</span>
-                            <ExternalLink className="w-3 h-3 text-[#e8a33d]" />
-                          </a>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleSchemeSelection(s.code)}
+                              className={'px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition border shadow-xs ' + (
+                                isSelected
+                                  ? 'bg-[#1f3a5f] text-[#e8a33d] border-[#1f3a5f]'
+                                  : 'bg-white text-[#5b4636] border-[#e4d9c7] hover:border-[#1f3a5f]'
+                              )}
+                            >
+                              <ArrowRightLeft className="w-3 h-3" />
+                              <span>{isSelected ? (isHindi ? 'चयनित ✓' : 'Selected ✓') : (isHindi ? 'तुलना' : 'Compare')}</span>
+                            </button>
+
+                            <a
+                              href={directUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#1f3a5f] text-white hover:bg-[#152742] transition shadow-sm"
+                            >
+                              <span>{t('applyOnPortal')}</span>
+                              <ExternalLink className="w-3 h-3 text-[#e8a33d]" />
+                            </a>
+                          </div>
                         </div>
                       </div>
                     );
@@ -708,6 +798,61 @@ export default function DashboardPage() {
         {/* Bottom Full-Width AGMARKNET Live Mandi Raw Material Prices Widget (Common to both portals) */}
         <AgmarknetPricingWidget localContext={localContext} />
       </div>
+
+      {/* Floating Scheme Comparison Action Banner */}
+      {selectedSchemes.length > 0 && (
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-2xl bg-[#1f3a5f] text-white p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-[#e8a33d] flex flex-col sm:flex-row items-center justify-between gap-3 animate-in slide-in-from-bottom duration-200">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="w-9 h-9 rounded-2xl bg-[#e8a33d] text-[#1f3a5f] flex items-center justify-center font-heading font-extrabold text-xs shrink-0 shadow-md">
+              {selectedSchemes.length}/2
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                <span>{selectedSchemes.length === 2 ? t('twoSchemesSelected') : t('selectOneMore')}</span>
+              </div>
+              <p className="text-[11px] text-[#efe6d6] truncate">
+                {selectedSchemes.map((code) => {
+                  const sc = schemesList.find((s) => s.code === code) || { name_en: code };
+                  return isHindi ? (sc.name_hi || sc.name_en || code) : (sc.name_en || code);
+                }).join(' vs ')}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+            <button
+              type="button"
+              onClick={() => setSelectedSchemes([])}
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold text-[#efe6d6] hover:text-white underline transition"
+            >
+              {t('clearSelection')}
+            </button>
+            <button
+              type="button"
+              disabled={selectedSchemes.length < 2}
+              onClick={handleOpenComparison}
+              className={'px-4 py-2.5 rounded-xl font-heading font-bold text-xs flex items-center gap-1.5 transition shadow-lg ' + (
+                selectedSchemes.length === 2
+                  ? 'bg-[#e8a33d] text-[#1f3a5f] hover:bg-[#f3b759] active:scale-95 animate-pulse'
+                  : 'bg-white/20 text-white/40 cursor-not-allowed'
+              )}
+            >
+              <span>{t('compareTwoSelected')}</span>
+              <ArrowRightLeft className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Side-by-Side Scheme Comparison Modal */}
+      <SchemeComparisonModal
+        isOpen={showCompareModal}
+        onClose={() => setShowCompareModal(false)}
+        data={comparisonData}
+        loading={loadingComparison}
+        lang={lang}
+        t={t}
+      />
 
       {/* Floating AI Chatbot Widget */}
       <ChatWidget
@@ -725,7 +870,7 @@ export default function DashboardPage() {
                   {t('viewSchemes')}
                 </h3>
                 <p className="text-xs text-[#8a7a68]">
-                  Govt of India Official Portals & Application Links
+                  {isHindi ? 'आधिकारिक पोर्टल लिंक व आमने-सामने तुलना' : 'Govt of India Official Portals & Scheme Comparison'}
                 </p>
               </div>
               <button
@@ -748,10 +893,16 @@ export default function DashboardPage() {
                   'https://pmsvanidhi.mohua.gov.in/'
                 );
 
+                const isSelected = selectedSchemes.includes(s.code);
+
                 return (
                   <div
                     key={s.code || idx}
-                    className="p-5 rounded-2xl border bg-[#fffdf9] border-[#e4d9c7] shadow-sm hover:border-[#1f3a5f]/40 transition"
+                    className={'p-5 rounded-2xl border transition shadow-sm ' + (
+                      isSelected
+                        ? 'bg-[#faf4e8] border-[#e8a33d]'
+                        : 'bg-[#fffdf9] border-[#e4d9c7] hover:border-[#1f3a5f]/40'
+                    )}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <h4 className="font-heading text-sm sm:text-base font-bold text-[#1f3a5f]">
@@ -788,15 +939,31 @@ export default function DashboardPage() {
                       <span className="text-xs sm:text-sm font-bold text-[#1f3a5f]">
                         Max: ₹{(s.loanCeiling || 50000).toLocaleString('en-IN')}
                       </span>
-                      <a
-                        href={directUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#1f3a5f] text-white hover:bg-[#152742] transition shadow-sm"
-                      >
-                        <span>{t('applyOnPortal')}</span>
-                        <ExternalLink className="w-4 h-4 text-[#e8a33d]" />
-                      </a>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSchemeSelection(s.code)}
+                          className={'px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 transition border shadow-xs ' + (
+                            isSelected
+                              ? 'bg-[#1f3a5f] text-[#e8a33d] border-[#1f3a5f]'
+                              : 'bg-[#faf6ee] text-[#5b4636] border-[#e4d9c7] hover:border-[#1f3a5f]'
+                          )}
+                        >
+                          <ArrowRightLeft className="w-3.5 h-3.5" />
+                          <span>{isSelected ? (isHindi ? 'चयनित ✓' : 'Selected ✓') : (isHindi ? 'तुलना में जोड़ें' : 'Compare')}</span>
+                        </button>
+
+                        <a
+                          href={directUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-[#1f3a5f] text-white hover:bg-[#152742] transition shadow-sm"
+                        >
+                          <span>{t('applyOnPortal')}</span>
+                          <ExternalLink className="w-4 h-4 text-[#e8a33d]" />
+                        </a>
+                      </div>
                     </div>
                   </div>
                 );
